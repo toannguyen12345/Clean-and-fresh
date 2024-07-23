@@ -3,7 +3,7 @@ import { TFunction } from 'i18next';
 
 import { MIN_LENGTH } from '@/constants';
 
-// Without i18n
+// Example without i18n
 export const loginSchema = z.object({
   email: z
     .string()
@@ -18,7 +18,7 @@ export const loginSchema = z.object({
   }),
 });
 
-// With i18n
+// Example with i18n
 export const generateLoginSchema = (t: TFunction) =>
   z.object({
     email: z

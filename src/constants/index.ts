@@ -1,5 +1,5 @@
 export * from './date';
-export * from './statusCode';
+export * from './code';
 export * from './apiRoutes';
 export * from './length';
 export * from './routes';
