@@ -15,7 +15,7 @@ Follow these instructions to get the project up and running on your local machin
 Make sure you have the following tools installed on your machine:
 
 - [Node.js](https://nodejs.org/) (v18 or higher)
-- [Yarn](https://yarnpkg.com/)
+- [pnpm](https://pnpm.io/)
 
 ### Installation
 
@@ -31,22 +31,22 @@ Make sure you have the following tools installed on your machine:
    ```
 3. Install dependencies:
    ```bash
-   yarn
+   pnpm install
    ```
 
 ### Development
 
 To start the development server, run:
 
-    yarn dev
+    pnpm dev
 
 This will start Vite development server on http://localhost:3000.
 
-### Build
+### Build Production
 
 To build the project for production, run:
 
-    yarn build
+    pnpm build
 
 ## Project Structure
 
@@ -64,7 +64,8 @@ The project structure is organized as follows:
     |-- pages/              # React page components
     |-- lib/                # Store library or module external
     |-- providers/          # Providers (theme, store, etc.)
-    |-- store/              # State management (Redux, MobX, etc.)
+    |-- schemas/            # Stores schemas for validation by zod
+    |-- stores/             # State management (Redux, MobX, etc.)
     |-- styles/             # Global styles or CSS modules
     |-- utils/              # Utility/helper functions
     |-- App.tsx             # Defines the main interface structure

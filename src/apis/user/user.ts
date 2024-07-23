@@ -1,11 +1,23 @@
+import { API_ROUTES } from '@/constants';
 import { axiosInstance } from '@/lib';
+import { IResponseSuccessList, IUser } from '@/types';
 
-const createUser = async () => {
+// Example for single data
+const createUser = async (): Promise<IUser> => {
   try {
-    await axiosInstance.post('/user');
+    return await axiosInstance.post(API_ROUTES.USER);
   } catch (error) {
     return Promise.reject(error);
   }
 };
 
-export { createUser };
+// Example for list data
+const getUsers = async (): Promise<IResponseSuccessList<IUser>> => {
+  try {
+    return await axiosInstance.get(API_ROUTES.USER);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export { createUser, getUsers };
