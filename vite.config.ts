@@ -11,6 +11,10 @@ export default defineConfig({
     svgr(),
     checker({
       typescript: true,
+      eslint: {
+        lintCommand:
+          'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
+      },
     }),
   ],
   resolve: {
