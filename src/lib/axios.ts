@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 import { STATUS_HTTP_CODE } from '@/constants';
-import { IResponseErrorAPI } from '@/types/user';
+import { IResponseErrorAxios, IResponseSuccessAxios } from '@/types';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -17,11 +17,11 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response: AxiosResponse<IResponseSuccessAxios>) => {
     // Handle response
-    return response.data;
+    return response.data.data;
   },
-  (error: AxiosError<IResponseErrorAPI>) => {
+  (error: AxiosError<IResponseErrorAxios>) => {
     if (error.response) {
       switch (error.response.status) {
         case STATUS_HTTP_CODE.BAD_REQUEST:
@@ -47,7 +47,7 @@ axiosInstance.interceptors.response.use(
       console.error('No response received:', error.request);
     }
 
-    return Promise.reject(error.response?.data);
+    return Promise.reject(error.response?.data.errors);
   },
 );
 
