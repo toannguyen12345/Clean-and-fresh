@@ -10,7 +10,6 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['react', 'react-refresh', 'import'],
   rules: {
-    '@typescript-eslint/no-explicit-any': 'off',
     'react/self-closing-comp': 'error',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-unused-vars': 'off',
