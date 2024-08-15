@@ -1,19 +1,16 @@
-export interface IResponseSuccessAxios {
-  message: string;
-  data: any;
-}
-
 export interface IResponseSuccessList<T> {
-  count: number;
+  total: number;
+  per_page: number;
+  page: number;
   items: T[];
 }
 
 export interface IErrorAPI {
   code: number;
-  details: string;
+  field: string;
+  message: string;
 }
 
 export interface IResponseErrorAxios {
-  message: string;
   errors: IErrorAPI[];
 }

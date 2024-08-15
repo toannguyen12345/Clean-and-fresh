@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 import { STATUS_HTTP_CODE } from '@/constants';
-import { IResponseErrorAxios, IResponseSuccessAxios } from '@/types';
+import { IResponseErrorAxios } from '@/types';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -17,9 +17,10 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse<IResponseSuccessAxios>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (response: AxiosResponse<any>) => {
     // Handle response
-    return response.data.data;
+    return response.data;
   },
   (error: AxiosError<IResponseErrorAxios>) => {
     if (error.response) {
