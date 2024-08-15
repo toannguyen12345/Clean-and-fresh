@@ -1,6 +1,4 @@
-# Project Name
-
-This is a simple project template initialized with Vite, TypeScript, and React.
+# ReactJS Code Base
 
 ## Introduction
 
@@ -47,6 +45,13 @@ This will start Vite development server on http://localhost:3000.
 To build the project for production, run:
 
     pnpm build
+
+## Documents
+
+These are the project rules documents:
+
+- [Git Flow](https://gitlab.mcsolutions.vn/mcsolutions/standard/-/blob/main/git/gitflow.md?ref_type=heads)
+- [Convention Code](https://gitlab.mcsolutions.vn/mcsolutions/standard/-/blob/main/convention-fe/convention.md?ref_type=heads)
 
 ## Project Structure
 
