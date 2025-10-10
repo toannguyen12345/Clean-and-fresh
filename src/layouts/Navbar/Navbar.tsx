@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom';
 
 //import { assets } from '@/assets/assets';
 
-interface INavbarProps {
-}
-
-const Navbar = ({}: INavbarProps): JSX.Element => {
+const Navbar = (): JSX.Element => {
   const [menu, setMenu] = useState<string>('Home');
 
   return (
