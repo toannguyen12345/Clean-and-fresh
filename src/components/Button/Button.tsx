@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-interface IButtonProps {
+export interface IButtonProps {
   children: ReactNode;
   color?:
     | 'primary'

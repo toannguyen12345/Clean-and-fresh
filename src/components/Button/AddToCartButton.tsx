@@ -1,23 +1,9 @@
-import Button from './Button';
+import Button, { IButtonProps } from './Button';
 
-interface IAddToCartButtonProps {
+interface IAddToCartButtonProps extends Omit<IButtonProps, 'children'> {
   onClick?: () => void;
   onIncrement?: () => void;
   onDecrement?: () => void;
-  size?: 'sm' | 'md' | 'lg';
-  color?:
-    | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'danger'
-    | 'warning'
-    | 'info'
-    | 'light'
-    | 'dark'
-    | 'black';
-  outline?: boolean;
-  disabled?: boolean;
-  className?: string;
   quantity?: number;
 }
 
@@ -34,7 +20,7 @@ const AddToCartButton = ({
 }: IAddToCartButtonProps): JSX.Element => {
   if (quantity === 0) {
     return (
-      <div className="absolute bottom-8 right 1 z 1">
+      <div className=" bottom-8 right 1 z 1">
         <Button
           onClick={onClick || onIncrement}
           color={color}
@@ -50,7 +36,7 @@ const AddToCartButton = ({
   }
 
   return (
-    <div className="absolute bottom-8 right-1 z 1">
+    <div className=" bottom-8 right-1 z 1">
       <div className="flex items-center gap-1">
         <Button
           onClick={onDecrement}
@@ -68,7 +54,7 @@ const AddToCartButton = ({
           onClick={onIncrement}
           color="success"
           size="sm"
-          outline={true}
+          outline
           className="p-0 border-0 bg-transparent hover:bg-transparent min-w-[20px] h-[20px] rounded-full flex items-center justify-center text-xs"
         >
           +
