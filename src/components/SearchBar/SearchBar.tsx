@@ -1,25 +1,23 @@
-interface SearchBarNewProps {
-  value?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-}
+import { useState } from 'react';
 
-const SearchBarNew = ({
-  value = '',
-  onChange,
-  placeholder = 'Tìm kiếm sản phẩm...',
-}: SearchBarNewProps): JSX.Element => {
+const SearchBar = () => {
+  const [name, setName] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+
   return (
     <div className="flex justify-center my-5">
       <input
         type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange?.(e.target.value)}
-        className="px-[45px] py-[20px] w-[500px] border border-[#ccc] rounded-full text-[20px] text-[#333] outline-none focus:border-[#28a745] focus:ring-2 focus:ring-[#28a745]/20 h-auto"
+        placeholder="Tìm kiếm sản phẩm..."
+        value={name}
+        onChange={handleChange}
+        className="px-8 py-6 w-96 border border-gray-300 rounded-full text-lg text-gray-800 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
       />
     </div>
   );
 };
 
-export default SearchBarNew;
+export default SearchBar;

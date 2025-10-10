@@ -36,7 +36,7 @@ const Select = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#28a745] focus:border-transparent"
+        className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
       >
         <span className="block truncate">
           {selectedOption ? selectedOption.label : placeholder}

@@ -1,8 +1,16 @@
+/*
+ * TẠM TẮT HẾT RESET CSS ĐỂ TEST
+ * ================================================
+ * Comment out toàn bộ để xem Tailwind hoạt động thế nào
+ * khi không có reset CSS
+ */
+
+/*
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Reset */
+* CSS Reset *
 *,
 *::before,
 *::after {
@@ -136,7 +144,7 @@ template {
   display: none;
 }
 
-/* Additional base styles */
+* Additional base styles *
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #ffffff;
@@ -154,6 +162,6 @@ ul, ol {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: inherit;
   line-height: 1.2;
 }
+*/

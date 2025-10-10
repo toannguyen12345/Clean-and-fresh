@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 
-interface ModalProps {
+import Button from '../Button/Button';
+
+interface IModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -14,7 +16,7 @@ const Modal = ({
   title,
   children,
   className = '',
-}: ModalProps): JSX.Element | null => {
+}: IModalProps): JSX.Element | null => {
   if (!isOpen) return null;
 
   return (
@@ -62,18 +64,12 @@ const Modal = ({
 
           {/* Footer */}
           <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#28a745]"
-            >
+            <Button color="secondary" outline onClick={onClose}>
               Hủy
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-white bg-[#28a745] border border-transparent rounded-md hover:bg-[#218838] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#28a745]"
-            >
+            </Button>
+            <Button color="primary" onClick={onClose}>
               Xác nhận
-            </button>
+            </Button>
           </div>
         </div>
       </div>

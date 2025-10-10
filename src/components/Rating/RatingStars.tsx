@@ -4,9 +4,7 @@ interface RatingStarsProps {
   className?: string;
 }
 
-const RatingStars = ({
-  className = 'w-[70px]',
-}: RatingStarsProps): JSX.Element => {
+const RatingStars = ({ className = 'w-16' }: RatingStarsProps): JSX.Element => {
   return <img src={assets.rating_starts} alt="rating" className={className} />;
 };
 

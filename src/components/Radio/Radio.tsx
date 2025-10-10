@@ -1,11 +1,11 @@
-interface RadioOption {
+interface IRadioOption {
   value: string;
   label: string;
   description?: string;
 }
 
-interface RadioGroupProps {
-  options: RadioOption[];
+interface IRadioGroupProps {
+  options: IRadioOption[];
   value?: string;
   onChange?: (value: string) => void;
   name: string;
@@ -18,7 +18,7 @@ const RadioGroup = ({
   onChange,
   name,
   className = '',
-}: RadioGroupProps): JSX.Element => {
+}: IRadioGroupProps): JSX.Element => {
   return (
     <div className={`space-y-2 ${className}`}>
       {options.map((option) => (
