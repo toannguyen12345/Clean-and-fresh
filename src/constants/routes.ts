@@ -4,6 +4,7 @@ const USER_ROUTES = {
   US0000_LOGIN: '/login',
   US0002_DETAIL_FOOD: '/detail-food',
   US0003_PROFILE: '/profile',
+  US0004_CART: '/cart',
 };
 
 export { USER_ROUTES };
