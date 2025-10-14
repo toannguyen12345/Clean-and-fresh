@@ -1,3 +1,4 @@
-export { CheckIcon } from './CheckIcon';
-export { ChevronDownIcon } from './DownIcon';
-export { XIcon } from './XIcon';
+export * from './CameraIcon';
+export * from './CheckIcon';
+export * from './DownIcon';
+export * from './XIcon';

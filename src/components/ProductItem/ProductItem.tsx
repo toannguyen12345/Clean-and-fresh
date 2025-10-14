@@ -34,7 +34,7 @@ const ProductItem = ({
 
       <div className="p-5 cursor-pointer" onClick={() => onProductClick?.(id)}>
         <div className="flex justify-between items-start mb-2.5 gap-6">
-          <h2 className="text-2xl font-bold text-text-dark">{name}</h2>
+          <h2 className="text-lg font-bold text-text-dark">{name}</h2>
           <div className="flex flex-col items-end gap-2">
             <RatingStars />
             <AddToCartButton
