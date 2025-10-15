@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 
 import { XIcon } from '@/icons';
 import { Input, Button } from '@/components';
+import {
+  loginSchema,
+  registerSchema,
+  LoginFormData,
+  RegisterFormData,
+} from '@/schemas/user';
 
 interface LoginPopupProps {
   setShowLogin: (show: boolean) => void;
@@ -15,21 +20,6 @@ const MOCK_ACCOUNT = {
   username: 'admin',
   password: '123',
 };
-
-const loginSchema = z.object({
-  account: z.string().min(1, 'Tên tài khoản không được để trống'),
-  password: z.string().min(3, 'Mật khẩu phải có ít nhất 3 ký tự'),
-});
-
-const registerSchema = z.object({
-  userName: z.string().min(1, 'Tên không được để trống'),
-  userEmail: z.string().email('Email không hợp lệ'),
-  account: z.string().min(1, 'Tên tài khoản không được để trống'),
-  password: z.string().min(3, 'Mật khẩu phải có ít nhất 3 ký tự'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-type RegisterFormData = z.infer<typeof registerSchema>;
 
 const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
   const [currentState, setCurrentState] = useState<'login' | 'register'>(

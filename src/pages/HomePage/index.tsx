@@ -42,14 +42,18 @@ const HomePage = () => {
     <div>
       <Header />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {mockProducts.map((product) => (
-          <ProductItem
-            key={product.id}
-            data={product}
-            onProductClick={handleProductClick}
-          />
-        ))}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Sản phẩm</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {mockProducts.map((product) => (
+            <ProductItem
+              key={product.id}
+              data={product}
+              onProductClick={handleProductClick}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

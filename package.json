@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@tanstack/react-table": "^8.21.3",
     "axios": "^1.7.2",
     "date-fns": "^3.6.0",
     "leaflet": "^1.9.4",
@@ -21,6 +22,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.52.1",
+    "react-hot-toast": "^2.6.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^6.22.3",
     "zod": "^3.23.8"

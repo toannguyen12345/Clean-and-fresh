@@ -9,9 +9,12 @@ import { USER_ROUTES } from '@/constants/routes';
 import DefaultLayout from '@/layouts/DefaultLayout';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
-const DetailFoodPage = lazy(() => import('./pages/DetailFoodPage'));
+const DetailFoodPage = lazy(() => import('./pages/DetailFood'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CartPage = lazy(() => import('./pages/CartPage'));
+const ProductTablePage = lazy(() => import('./pages/Product/ProductTable'));
+const AddProductPage = lazy(() => import('./pages/Product/AddProduct'));
+const EditProductPage = lazy(() => import('./pages/Product/EditProduct'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -57,6 +60,30 @@ const router = createBrowserRouter(
         element={
           <Suspense fallback={<LoadingFallback />}>
             <CartPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={USER_ROUTES.US0005_PRODUCT_LIST}
+        element={
+          <Suspense fallback={<LoadingFallback />}>
+            <ProductTablePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={USER_ROUTES.US0006_ADD_PRODUCT}
+        element={
+          <Suspense fallback={<LoadingFallback />}>
+            <AddProductPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={USER_ROUTES.US0007_EDIT_PRODUCT}
+        element={
+          <Suspense fallback={<LoadingFallback />}>
+            <EditProductPage />
           </Suspense>
         }
       />
