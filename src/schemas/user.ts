@@ -3,22 +3,25 @@ import { TFunction } from 'i18next';
 
 import { MIN_LENGTH } from '@/constants';
 
-// Example without i18n
+// Login Schema
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(MIN_LENGTH.REQUIRED, {
-      message: 'This field is required.',
-    })
-    .email({
-      message: 'Must be email',
-    }),
-  password: z.string().min(MIN_LENGTH.REQUIRED, {
-    message: 'This field is required.',
-  }),
+  account: z.string().min(1, 'Tên tài khoản không được để trống'),
+  password: z.string().min(3, 'Mật khẩu phải có ít nhất 3 ký tự'),
 });
 
-// Example with i18n
+// Register Schema
+export const registerSchema = z.object({
+  userName: z.string().min(1, 'Tên không được để trống'),
+  userEmail: z.string().email('Email không hợp lệ'),
+  account: z.string().min(1, 'Tên tài khoản không được để trống'),
+  password: z.string().min(3, 'Mật khẩu phải có ít nhất 3 ký tự'),
+});
+
+// Type exports
+export type LoginFormData = z.infer<typeof loginSchema>;
+export type RegisterFormData = z.infer<typeof registerSchema>;
+
+// Example with i18n (keep for reference)
 export const generateLoginSchema = (t: TFunction) =>
   z.object({
     email: z

@@ -1,20 +1,28 @@
-import { useState } from 'react';
+export interface SearchBarProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}
 
-const SearchBar = () => {
-  const [name, setName] = useState('');
-
+const SearchBar = ({
+  value,
+  onChange,
+  placeholder = 'Tìm kiếm sản phẩm...',
+  className = '',
+}: SearchBarProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
+    onChange?.(e.target.value);
   };
 
   return (
-    <div className="flex justify-center my-5">
+    <div className={`flex ${className}`}>
       <input
         type="text"
-        placeholder="Tìm kiếm sản phẩm..."
-        value={name}
+        placeholder={placeholder}
+        value={value}
         onChange={handleChange}
-        className="px-8 py-6 w-96 border border-gray-300 rounded-full text-lg text-gray-800 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+        className="px-4 py-2 w-full border border-gray-300 rounded-lg text-base text-gray-800 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
       />
     </div>
   );

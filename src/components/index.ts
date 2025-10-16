@@ -1,5 +1,6 @@
 export * from './Button';
 export * from './Checkbox';
+export * from './DataTable';
 export * from './Dropdown';
 export * from './Input';
 export * from './Label';
@@ -12,4 +13,5 @@ export * from './Rating';
 export * from './SearchBar';
 export * from './Select';
 export * from './Textarea';
+export * from './Toast';
 export * from './UserAvatar';

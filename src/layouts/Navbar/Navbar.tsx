@@ -59,6 +59,16 @@ const Navbar = (): JSX.Element => {
             Đơn mua
           </Link>
 
+          <Link
+            to={USER_ROUTES.US0005_PRODUCT_LIST}
+            onClick={() => setMenu('products')}
+            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
+              menu === 'products' ? 'text-[#28a745] font-semibold' : ''
+            }`}
+          >
+            Quản lý sản phẩm
+          </Link>
+
           <a
             href="#"
             onClick={() => setMenu('About')}
