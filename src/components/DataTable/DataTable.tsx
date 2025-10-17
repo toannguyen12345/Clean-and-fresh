@@ -23,7 +23,7 @@ export interface DataTableProps<T> {
   defaultPageSize?: number;
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T>({
   data,
   columns,
   searchPlaceholder = 'Search...',
@@ -96,7 +96,6 @@ export function DataTable<T extends Record<string, unknown>>({
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50">
@@ -149,7 +148,6 @@ export function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-700">
           Showing {pagination.pageIndex * pagination.pageSize + 1} to{' '}

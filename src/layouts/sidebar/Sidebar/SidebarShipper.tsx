@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 interface NavItem {
   path: string;
@@ -8,31 +8,18 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
-  { path: '/admin/listUser', icon: '👥', label: 'Người dùng' },
-  { path: '/products', icon: '🥬', label: 'Sản phẩm' },
-  { path: '/admin/listShipper', icon: '🚚', label: 'Shipper' },
-  { path: '/discounts', icon: '🎫', label: 'Mã giảm giá' },
+  { path: '/shipper/orders', icon: '🚚', label: 'Đơn hàng' },
 ];
 
-const Sidebar = () => {
+const SidebarShipper = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
 
   const handleLogout = () => {
-    // Clear authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     navigate('/');
-  };
-
-  const isActiveRoute = (path: string) => {
-    return location.pathname === path;
   };
 
   return (
@@ -68,14 +55,16 @@ const Sidebar = () => {
       <ul className="py-4">
         {NAV_ITEMS.map((item) => (
           <li key={item.path}>
-            <Link
+            <NavLink
               to={item.path}
               onClick={() => !isExpanded && setIsExpanded(true)}
-              className={`flex items-center gap-4 px-4 py-3 transition-all duration-200 ${
-                isActiveRoute(item.path)
-                  ? 'bg-[#28a745] text-white shadow-lg'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-              } ${!isExpanded && 'justify-center'}`}
+              className={({ isActive }) =>
+                `flex items-center gap-4 px-4 py-3 transition-all duration-200 ${
+                  isActive
+                    ? 'bg-[#28a745] text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                } ${!isExpanded && 'justify-center'}`
+              }
             >
               <span className="text-2xl">{item.icon}</span>
               {isExpanded && (
@@ -83,7 +72,7 @@ const Sidebar = () => {
                   {item.label}
                 </span>
               )}
-            </Link>
+            </NavLink>
           </li>
         ))}
 
@@ -105,4 +94,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default SidebarShipper;
