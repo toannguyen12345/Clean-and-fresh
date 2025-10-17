@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Input, Button, Textarea } from '@/components';
+import { Input, Button, Textarea, FormField } from '@/components';
 import { productSchema, ProductFormData } from '@/schemas/product';
 
 interface InputFormProps {
@@ -52,7 +52,6 @@ const InputForm = ({
     }
   }, [initialData]);
 
-  // Cleanup object URL when component unmounts or image changes
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview.startsWith('blob:')) {
@@ -92,32 +91,25 @@ const InputForm = ({
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         <div className="lg:col-span-2 space-y-4">
-          <div>
-            <label
-              htmlFor="productName"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Tên sản phẩm
-            </label>
+          <FormField
+            label="Tên sản phẩm"
+            isRequired
+            error={errors.productName?.message}
+          >
             <Input
-              id="productName"
               type="text"
               placeholder="Nhập tên sản phẩm"
               {...register('productName')}
-              error={errors.productName?.message}
             />
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="category"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Loại sản phẩm
-              </label>
+            <FormField
+              label="Loại sản phẩm"
+              isRequired
+              error={errors.category?.message}
+            >
               <select
-                id="category"
                 {...register('category')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
@@ -127,63 +119,46 @@ const InputForm = ({
                   </option>
                 ))}
               </select>
-              {errors.category && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.category.message}
-                </p>
-              )}
-            </div>
+            </FormField>
 
-            <div>
-              <label
-                htmlFor="productQuantity"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Số lượng
-              </label>
+            <FormField
+              label="Số lượng"
+              isRequired
+              error={errors.productQuantity?.message}
+            >
               <Input
-                id="productQuantity"
                 type="number"
                 min="1"
                 placeholder="Nhập số lượng"
                 {...register('productQuantity', { valueAsNumber: true })}
-                error={errors.productQuantity?.message}
               />
-            </div>
+            </FormField>
           </div>
 
-          <div>
-            <label
-              htmlFor="productPrice"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Giá bán ra (VNĐ)
-            </label>
+          <FormField
+            label="Giá bán ra (VNĐ)"
+            isRequired
+            error={errors.productPrice?.message}
+          >
             <Input
-              id="productPrice"
               type="number"
               min="0"
               placeholder="Nhập giá bán ra"
               {...register('productPrice', { valueAsNumber: true })}
-              error={errors.productPrice?.message}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label
-              htmlFor="productDescription"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Mô tả
-            </label>
+          <FormField
+            label="Mô tả"
+            isRequired
+            error={errors.productDescription?.message}
+          >
             <Textarea
-              id="productDescription"
               rows={4}
               placeholder="Nhập mô tả sản phẩm"
               {...register('productDescription')}
-              error={errors.productDescription?.message}
             />
-          </div>
+          </FormField>
 
           <div className="flex gap-3 pt-4">
             <Button
