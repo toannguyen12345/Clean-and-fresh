@@ -22,7 +22,7 @@ const SearchBar = ({
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
-        className="px-4 py-2 w-full border border-gray-300 rounded-lg text-base text-gray-800 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+        className="px-4 py-2 w-full border border-gray-300 rounded-lg bg-white text-base text-gray-800 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
       />
     </div>
   );

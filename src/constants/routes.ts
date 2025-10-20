@@ -5,10 +5,12 @@ const USER_ROUTES = {
   US0002_DETAIL_FOOD: '/detail-food',
   US0003_PROFILE: '/profile',
   US0004_CART: '/cart',
-  // Product routes (RESTful convention)
-  US0005_PRODUCT_LIST: '/products',
-  US0006_ADD_PRODUCT: '/products/new',
-  US0007_EDIT_PRODUCT: '/products/:id/edit',
+  US0005_PRODUCT_LIST: '/admin/products',
+  US0006_ADD_PRODUCT: '/admin/products/new',
+  US0007_EDIT_PRODUCT: '/admin/products/:id/edit',
+  US0008_DISCOUNT_LIST: '/admin/discounts',
+  US0009_ADD_DISCOUNT: '/admin/discounts/new',
+  US0010_EDIT_DISCOUNT: '/admin/discounts/:id/edit',
 };
 
 export { USER_ROUTES };
