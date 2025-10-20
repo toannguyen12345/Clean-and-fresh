@@ -14,6 +14,8 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const DetailFoodPage = lazy(() => import('./pages/DetailFood'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CartPage = lazy(() => import('./pages/CartPage'));
+const OrderHistoryPage = lazy(() => import('./pages/OrderHistory'));
+const ShipperOrderPage = lazy(() => import('./pages/ShipperOrderPage'));
 const ProductTablePage = lazy(() => import('./pages/Product/ProductTable'));
 const AddProductPage = lazy(() => import('./pages/Product/AddProduct'));
 const EditProductPage = lazy(() => import('./pages/Product/EditProduct'));
@@ -70,22 +72,23 @@ const router = createBrowserRouter(
             </Suspense>
           }
         />
+        <Route
+          path={USER_ROUTES.US0011_ORDER_HISTORY}
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OrderHistoryPage />
+            </Suspense>
+          }
+        />
       </Route>
 
       {/* Shipper routes with SidebarShipper */}
       <Route element={<ShipperLayout />}>
         <Route
-          path="/shipper/orders"
+          path={USER_ROUTES.US0012_SHIPPER_ORDERS}
           element={
             <Suspense fallback={<LoadingFallback />}>
-              <div className="p-8">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Quản lý đơn hàng
-                </h1>
-                <p className="mt-4 text-gray-600">
-                  Trang quản lý đơn hàng cho shipper
-                </p>
-              </div>
+              <ShipperOrderPage />
             </Suspense>
           }
         />
