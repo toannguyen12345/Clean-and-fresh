@@ -41,3 +41,22 @@ export const SHIPPER_ORDER_STATUS_LABELS: Record<ShipperOrderStatus, string> = {
   delivered: 'Đã giao tới nơi',
   canceled: 'Đơn hàng bị hủy',
 };
+
+export const SHIPPER_ORDER_STATUS_OPTIONS = [
+  {
+    value: 'pending' as const,
+    label: SHIPPER_ORDER_STATUS_LABELS.pending,
+  },
+  {
+    value: 'delivering' as const,
+    label: SHIPPER_ORDER_STATUS_LABELS.delivering,
+  },
+  {
+    value: 'delivered' as const,
+    label: SHIPPER_ORDER_STATUS_LABELS.delivered,
+  },
+  {
+    value: 'canceled' as const,
+    label: SHIPPER_ORDER_STATUS_LABELS.canceled,
+  },
+];
