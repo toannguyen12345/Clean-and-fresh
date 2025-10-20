@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { BsBox } from 'react-icons/bs';
 
-import type { ShipperOrderStatus, OrderItem, User } from '@/types';
+import type { ShipperOrderStatus, OrderItem, OrderUser } from '@/types';
 import { calculateItemsCount } from '@/utils';
-import { SHIPPER_ORDER_STATUS_LABELS } from '@/constants';
+import { SHIPPER_ORDER_STATUS_OPTIONS } from '@/constants';
 import { InfiniteScroll, Select } from '@/components';
 
 interface Order {
   _id: string;
   items: OrderItem[];
-  userId?: User;
+  userId?: OrderUser;
   paymentStatus: ShipperOrderStatus;
 }
 
@@ -177,6 +177,11 @@ const ShipperOrderPage = () => {
         hasMore={hasMore}
         isLoading={loadingMore}
         onLoadMore={loadMore}
+        endMessage={
+          <p className="text-center text-gray-500 text-sm">
+            Đã hiển thị tất cả đơn hàng
+          </p>
+        }
       >
         <div className="space-y-4">
           {displayedOrders.map((order) => {
@@ -227,24 +232,7 @@ const ShipperOrderPage = () => {
                         value as Order['paymentStatus'],
                       )
                     }
-                    options={[
-                      {
-                        value: 'pending',
-                        label: SHIPPER_ORDER_STATUS_LABELS.pending,
-                      },
-                      {
-                        value: 'delivering',
-                        label: SHIPPER_ORDER_STATUS_LABELS.delivering,
-                      },
-                      {
-                        value: 'delivered',
-                        label: SHIPPER_ORDER_STATUS_LABELS.delivered,
-                      },
-                      {
-                        value: 'canceled',
-                        label: SHIPPER_ORDER_STATUS_LABELS.canceled,
-                      },
-                    ]}
+                    options={SHIPPER_ORDER_STATUS_OPTIONS}
                     className={statusConfig.selectBg}
                   />
                 </div>

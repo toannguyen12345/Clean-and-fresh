@@ -59,7 +59,7 @@ const InfiniteScroll = ({
           !isLoading &&
           (endMessage || (
             <p className="text-center text-gray-500 text-sm">
-              Đã hiển thị tất cả đơn hàng
+              Đã hiển thị tất cả kết quả
             </p>
           ))}
       </div>

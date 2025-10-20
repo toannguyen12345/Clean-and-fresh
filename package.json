@@ -16,6 +16,7 @@
     "@hookform/resolvers": "^3.9.0",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.7.2",
+    "chart.js": "^4.5.1",
     "date-fns": "^3.6.0",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",

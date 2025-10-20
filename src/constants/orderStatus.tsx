@@ -3,9 +3,9 @@ import { BsClock, BsCheckCircle, BsXCircle } from 'react-icons/bs';
 import type { OrderStatus, ShipperOrderStatus } from '@/types';
 
 export const ORDER_STATUS = {
-  PENDING: 'pending' as const,
-  DELIVERED: 'delivered' as const,
-  CANCELED: 'canceled' as const,
+  PENDING: 'pending',
+  DELIVERED: 'delivered',
+  CANCELED: 'canceled',
 };
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
@@ -41,3 +41,22 @@ export const SHIPPER_ORDER_STATUS_LABELS: Record<ShipperOrderStatus, string> = {
   delivered: 'Đã giao tới nơi',
   canceled: 'Đơn hàng bị hủy',
 };
+
+export const SHIPPER_ORDER_STATUS_OPTIONS = [
+  {
+    value: 'pending',
+    label: SHIPPER_ORDER_STATUS_LABELS.pending,
+  },
+  {
+    value: 'delivering',
+    label: SHIPPER_ORDER_STATUS_LABELS.delivering,
+  },
+  {
+    value: 'delivered',
+    label: SHIPPER_ORDER_STATUS_LABELS.delivered,
+  },
+  {
+    value: 'canceled',
+    label: SHIPPER_ORDER_STATUS_LABELS.canceled,
+  },
+];
