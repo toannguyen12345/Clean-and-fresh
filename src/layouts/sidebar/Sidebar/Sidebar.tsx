@@ -10,9 +10,9 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
   { path: '/admin/listUser', icon: '👥', label: 'Người dùng' },
-  { path: '/products', icon: '🥬', label: 'Sản phẩm' },
+  { path: '/admin/products', icon: '🥬', label: 'Sản phẩm' },
   { path: '/admin/listShipper', icon: '🚚', label: 'Shipper' },
-  { path: '/discounts', icon: '🎫', label: 'Mã giảm giá' },
+  { path: '/admin/discounts', icon: '🎫', label: 'Mã giảm giá' },
 ];
 
 const Sidebar = () => {
