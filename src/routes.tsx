@@ -3,6 +3,7 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
+  Navigate,
 } from 'react-router-dom';
 
 import { USER_ROUTES } from '@/constants/routes';
@@ -16,12 +17,17 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CartPage = lazy(() => import('./pages/CartPage'));
 const OrderHistoryPage = lazy(() => import('./pages/OrderHistory'));
 const ShipperOrderPage = lazy(() => import('./pages/ShipperOrderPage'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const ProductTablePage = lazy(() => import('./pages/Product/ProductTable'));
 const AddProductPage = lazy(() => import('./pages/Product/AddProduct'));
 const EditProductPage = lazy(() => import('./pages/Product/EditProduct'));
 const DiscountTablePage = lazy(() => import('./pages/Discount/DiscountTable'));
 const AddDiscountPage = lazy(() => import('./pages/Discount/AddDiscount'));
 const EditDiscountPage = lazy(() => import('./pages/Discount/EditDiscount'));
+const UserTablePage = lazy(() => import('./pages/User/UserTable'));
+const EditUserPage = lazy(() => import('./pages/User/EditUser'));
+const ShipperTablePage = lazy(() => import('./pages/Shipper/ShipperTable'));
+const EditShipperPage = lazy(() => import('./pages/Shipper/EditShipper'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -97,6 +103,14 @@ const router = createBrowserRouter(
       {/* Admin routes with Sidebar */}
       <Route element={<AdminLayout />}>
         <Route
+          path={USER_ROUTES.US0013_ADMIN_DASHBOARD}
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminDashboard />
+            </Suspense>
+          }
+        />
+        <Route
           path={USER_ROUTES.US0005_PRODUCT_LIST}
           element={
             <Suspense fallback={<LoadingFallback />}>
@@ -141,6 +155,42 @@ const router = createBrowserRouter(
           element={
             <Suspense fallback={<LoadingFallback />}>
               <EditDiscountPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/listUser"
+          element={<Navigate to={USER_ROUTES.US0014_USER_LIST} replace />}
+        />
+        <Route
+          path={USER_ROUTES.US0014_USER_LIST}
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <UserTablePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path={USER_ROUTES.US0015_EDIT_USER}
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <EditUserPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path={USER_ROUTES.US0016_SHIPPER_LIST}
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <ShipperTablePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path={USER_ROUTES.US0017_EDIT_SHIPPER}
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <EditShipperPage />
             </Suspense>
           }
         />
