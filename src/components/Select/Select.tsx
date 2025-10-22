@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { ChevronDownIcon, CheckIcon } from '@/icons';
 
@@ -25,6 +25,12 @@ const Select = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value || '');
 
+  useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValue(value);
+    }
+  }, [value]);
+
   const selectedOption = options.find((opt) => opt.value === selectedValue);
 
   const handleSelect = (optionValue: string) => {
@@ -34,18 +40,18 @@ const Select = ({
   };
 
   return (
-    <div className={`relative w-full ${className}`}>
+    <div className={`relative w-full`}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        className={`relative w-full cursor-pointer rounded-lg py-2 pl-3 pr-10 text-left border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 ${className || 'bg-white border-gray-300'}`}
       >
-        <span className="block truncate">
+        <span className="block truncate font-medium">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
           <ChevronDownIcon
-            className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           />
         </span>
       </button>

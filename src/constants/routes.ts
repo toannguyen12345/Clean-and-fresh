@@ -11,6 +11,8 @@ const USER_ROUTES = {
   US0008_DISCOUNT_LIST: '/admin/discounts',
   US0009_ADD_DISCOUNT: '/admin/discounts/new',
   US0010_EDIT_DISCOUNT: '/admin/discounts/:id/edit',
+  US0011_ORDER_HISTORY: '/order-history',
+  US0012_SHIPPER_ORDERS: '/shipper/orders',
 };
 
 export { USER_ROUTES };
