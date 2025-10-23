@@ -1,16 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { LoginPopup, UserAvatar, Dropdown, Button } from '@/components';
 import { USER_ROUTES } from '@/constants/routes';
+import authService from '@/apis/Authentication/auth';
+import { useUser } from '@/contexts/UserContext';
 
 const Navbar = (): JSX.Element => {
   const [menu, setMenu] = useState<string>('Home');
   const [showLogin, setShowLogin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const userAvatar =
-    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
+  const { userAvatar, refreshUserAvatar } = useUser();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = authService.getAuthToken();
+      setIsLoggedIn(!!token);
+
+      if (token) {
+        await refreshUserAvatar();
+      }
+    };
+
+    checkLoginStatus();
+  }, [refreshUserAvatar]);
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
@@ -18,7 +32,9 @@ const Navbar = (): JSX.Element => {
   };
 
   const handleLogout = () => {
+    authService.logout();
     setIsLoggedIn(false);
+    navigate('/');
   };
 
   return (

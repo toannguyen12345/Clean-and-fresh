@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const userProfileSchema = z.object({
-  account: z.string(),
+  account: z.string().optional(),
   userName: z
     .string()
     .min(1, 'Vui lòng nhập tên người dùng')

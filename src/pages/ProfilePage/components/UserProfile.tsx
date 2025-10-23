@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -10,6 +11,9 @@ import {
   userProfileSchema,
   UserProfileFormData,
 } from '@/schemas/userProfile.schema';
+import authService from '@/apis/Authentication/auth';
+import userService from '@/apis/User/user';
+import { useUser } from '@/contexts/UserContext';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -20,18 +24,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const mockUser: UserProfileFormData = {
-  account: 'user123',
-  userName: 'Nguyen Van A',
-  userEmail: 'nguyenvana@example.com',
-  userBirthDay: '1990-01-15',
-  userAddress: 'So 1, Ly tu trong, Quan hai chau, da nang',
-};
-
 const UserProfile = (): JSX.Element => {
+  const { refreshUserAvatar } = useUser();
   const [previewImage, setPreviewImage] = useState(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
   );
+  const [_isLoading, setIsLoading] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [account, setAccount] = useState('');
+  const [userName, setUserName] = useState('');
+  const [userAddress, setUserAddress] = useState('');
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const isMapInitialized = useRef(false);
@@ -40,10 +42,62 @@ const UserProfile = (): JSX.Element => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<UserProfileFormData>({
     resolver: zodResolver(userProfileSchema),
-    defaultValues: mockUser,
   });
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser || !currentUser.id) {
+          toast.error('Không thể lấy thông tin user');
+          return;
+        }
+
+        const result = await userService.getUserById(currentUser.id);
+
+        if (result.success && result.data) {
+          const userData = (Array.isArray(result.data)
+            ? result.data[0]
+            : result.data) as unknown as Record<string, unknown>;
+
+          const userNameValue = (userData.userName as string) || '';
+          const userAddressValue = (userData.userAddress as string) || '';
+
+          const accountName =
+            (currentUser.account as string) ||
+            (currentUser.idAccount as string) ||
+            '';
+
+          setAccount(accountName);
+          setUserName(userNameValue);
+          setUserAddress(userAddressValue);
+
+          reset({
+            account: accountName,
+            userName: userNameValue,
+            userEmail: (userData.userEmail as string) || '',
+            userBirthDay: (userData.userBirthDay as string) || '',
+            userAddress: userAddressValue,
+          });
+
+          if (userData.IMG) {
+            setPreviewImage(userData.IMG as string);
+          }
+        } else {
+          toast.error('Lấy thông tin user thất bại');
+        }
+      } catch (error) {
+        toast.error('Có lỗi xảy ra khi tải thông tin user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserProfile();
+  }, [reset]);
 
   useEffect(() => {
     if (!mapContainerRef.current || isMapInitialized.current) return;
@@ -63,7 +117,7 @@ const UserProfile = (): JSX.Element => {
 
       L.marker([16.0544, 108.2022])
         .addTo(map)
-        .bindPopup(`<b>${mockUser.userName}</b><br>${mockUser.userAddress}`)
+        .bindPopup(`<b>${userName}</b><br>${userAddress}`)
         .openPopup();
 
       mapRef.current = map;
@@ -79,9 +133,23 @@ const UserProfile = (): JSX.Element => {
         isMapInitialized.current = false;
       }
     };
-  }, []);
+  }, [userName, userAddress]);
 
   const handleImageChange = (file: File) => {
+    const maxSize = 1 * 1024 * 1024;
+    const validFormats = ['image/jpeg', 'image/png'];
+
+    if (file.size > maxSize) {
+      toast.error('Ảnh phải nhỏ hơn 1 MB');
+      return;
+    }
+
+    if (!validFormats.includes(file.type)) {
+      toast.error('Chỉ hỗ trợ định dạng JPEG và PNG');
+      return;
+    }
+
+    setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewImage(reader.result as string);
@@ -89,8 +157,58 @@ const UserProfile = (): JSX.Element => {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = (_data: UserProfileFormData) => {
-    // TODO: Implement submit logic
+  const onSubmit = async (data: UserProfileFormData) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+
+      if (!currentUser || !currentUser.id) {
+        toast.error('Không thể lấy thông tin user');
+        return;
+      }
+
+      const updatePayload = {
+        userName: data.userName || userName,
+        userEmail: data.userEmail,
+        userBirthDay: data.userBirthDay,
+        userAddress: data.userAddress || userAddress,
+      };
+
+      const result = await userService.updateUser(
+        currentUser.id,
+        updatePayload,
+        imageFile || undefined,
+      );
+
+      if (result.success) {
+        toast.success('Cập nhật thông tin thành công');
+        setImageFile(null);
+
+        if (result.data) {
+          const userData = (Array.isArray(result.data)
+            ? result.data[0]
+            : result.data) as unknown as Record<string, unknown>;
+          if (userData.IMG) {
+            setPreviewImage(userData.IMG as string);
+          }
+        }
+
+        const reloadResult = await userService.getUserById(currentUser.id);
+        if (reloadResult.success && reloadResult.data) {
+          const reloadedData = (Array.isArray(reloadResult.data)
+            ? reloadResult.data[0]
+            : reloadResult.data) as unknown as Record<string, unknown>;
+          if (reloadedData.IMG) {
+            setPreviewImage(reloadedData.IMG as string);
+          }
+        }
+
+        await refreshUserAvatar();
+      } else {
+        toast.error(result.message || 'Cập nhật thông tin thất bại');
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi cập nhật thông tin');
+    }
   };
 
   return (
@@ -111,7 +229,7 @@ const UserProfile = (): JSX.Element => {
                   Tên đăng nhập:
                 </label>
                 <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-600">
-                  {mockUser.account}
+                  {account}
                 </div>
               </div>
 
@@ -162,7 +280,7 @@ const UserProfile = (): JSX.Element => {
             <div className="flex flex-col items-center gap-3">
               <UserAvatar
                 src={previewImage}
-                alt={mockUser.userName}
+                alt={userName || 'User Avatar'}
                 size="lg"
                 editable
                 onImageChange={handleImageChange}
