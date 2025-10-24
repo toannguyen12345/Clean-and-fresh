@@ -44,19 +44,19 @@ export const SHIPPER_ORDER_STATUS_LABELS: Record<ShipperOrderStatus, string> = {
 
 export const SHIPPER_ORDER_STATUS_OPTIONS = [
   {
-    value: 'pending',
+    value: 'pending' as const,
     label: SHIPPER_ORDER_STATUS_LABELS.pending,
   },
   {
-    value: 'delivering',
+    value: 'delivering' as const,
     label: SHIPPER_ORDER_STATUS_LABELS.delivering,
   },
   {
-    value: 'delivered',
+    value: 'delivered' as const,
     label: SHIPPER_ORDER_STATUS_LABELS.delivered,
   },
   {
-    value: 'canceled',
+    value: 'canceled' as const,
     label: SHIPPER_ORDER_STATUS_LABELS.canceled,
   },
 ];
