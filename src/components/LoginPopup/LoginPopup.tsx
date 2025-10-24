@@ -12,7 +12,7 @@ import {
   LoginFormData,
   RegisterFormData,
 } from '@/schemas/user';
-import authService from '@/apis/Authentication/auth';
+import authService from '@/apis/auth';
 import { USER_ROUTES } from '@/constants/routes';
 
 interface LoginPopupProps {
@@ -61,14 +61,13 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
         onLoginSuccess?.();
         setShowLogin(false);
 
-        // Auto redirect based on user role
-        const primaryRole = authService.getPrimaryRole();
+        const currentUser = authService.getCurrentUser();
+        const primaryRole = currentUser?.roles?.[0];
         if (primaryRole === 'admin') {
           navigate(USER_ROUTES.US0013_ADMIN_DASHBOARD);
         } else if (primaryRole === 'shipper') {
           navigate(USER_ROUTES.US0012_SHIPPER_ORDERS);
         } else {
-          // Default to user home page
           navigate(USER_ROUTES.US0001_HOME);
         }
       } else {
@@ -184,9 +183,9 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
               color="success"
               size="lg"
               className="w-full bg-[#28a745] hover:bg-[#218838] text-white"
-              disabled={_isLoading}
+              loading={_isLoading}
             >
-              {_isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              Đăng nhập
             </Button>
           </form>
         ) : (
@@ -253,9 +252,9 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
               color="success"
               size="lg"
               className="w-full bg-[#28a745] hover:bg-[#218838] text-white"
-              disabled={_isLoading}
+              loading={_isLoading}
             >
-              {_isLoading ? 'Đang đăng ký...' : 'Tạo tài khoản mới'}
+              Tạo tài khoản mới
             </Button>
           </form>
         )}

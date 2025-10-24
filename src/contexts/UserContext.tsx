@@ -4,42 +4,87 @@ import {
   useState,
   useCallback,
   ReactNode,
+  useEffect,
 } from 'react';
 
+import type { UserInfo } from '@/apis/user';
+
 interface UserContextType {
+  userData: UserInfo | null;
   userAvatar: string;
+  setUserData: (data: UserInfo | null) => void;
   setUserAvatar: (avatar: string) => void;
+  loadUserData: () => Promise<void>;
   refreshUserAvatar: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const [userData, setUserData] = useState<UserInfo | null>(null);
   const [userAvatar, setUserAvatar] = useState(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
   );
 
-  const refreshUserAvatar = useCallback(async () => {
-    const authService = (await import('@/apis/Authentication/auth')).default;
-    const userService = (await import('@/apis/User/user')).default;
+  const loadUserData = useCallback(async () => {
+    const authService = (await import('@/apis/auth')).default;
+    const userService = (await import('@/apis/user')).default;
 
     const currentUser = authService.getCurrentUser();
     if (currentUser && currentUser.id) {
       const result = await userService.getUserById(currentUser.id);
       if (result.success && result.data) {
-        const userData = (Array.isArray(result.data)
-          ? result.data[0]
-          : result.data) as unknown as Record<string, unknown>;
-        if (userData.IMG) {
-          setUserAvatar(userData.IMG as string);
+        const user = (
+          Array.isArray(result.data) ? result.data[0] : result.data
+        ) as UserInfo;
+        setUserData(user);
+        if (user.IMG) {
+          setUserAvatar(user.IMG);
         }
       }
+    } else {
+      // Nếu không có user, reset
+      setUserData(null);
+      setUserAvatar(
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+      );
     }
   }, []);
 
+  const refreshUserAvatar = useCallback(async () => {
+    await loadUserData();
+  }, [loadUserData]);
+
+  // Load user data khi component mount
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
+
+  // Listen to storage changes (login/logout từ tab khác hoặc cùng tab)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'authToken') {
+        // Delay một chút để đảm bảo token đã được update
+        setTimeout(() => {
+          loadUserData();
+        }, 100);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [loadUserData]);
+
   return (
     <UserContext.Provider
-      value={{ userAvatar, setUserAvatar, refreshUserAvatar }}
+      value={{
+        userData,
+        userAvatar,
+        setUserData,
+        setUserAvatar,
+        loadUserData,
+        refreshUserAvatar,
+      }}
     >
       {children}
     </UserContext.Provider>

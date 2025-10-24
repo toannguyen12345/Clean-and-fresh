@@ -11,8 +11,8 @@ import {
   userProfileSchema,
   UserProfileFormData,
 } from '@/schemas/userProfile.schema';
-import authService from '@/apis/Authentication/auth';
-import userService from '@/apis/User/user';
+import authService from '@/apis/auth';
+import userService from '@/apis/user';
 import { useUser } from '@/contexts/UserContext';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

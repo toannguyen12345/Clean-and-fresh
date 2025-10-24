@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, generatePath } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { DataTable, Button } from '@/components';
@@ -48,7 +48,7 @@ const ShipperTablePage = () => {
   };
 
   const handleUpdateShipper = (id: string) => {
-    navigate(USER_ROUTES.US0017_EDIT_SHIPPER.replace(':id', id));
+    navigate(generatePath(USER_ROUTES.US0017_EDIT_SHIPPER, { id }));
   };
 
   const columns: ColumnDef<User>[] = [
