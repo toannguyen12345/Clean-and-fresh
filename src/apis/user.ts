@@ -94,8 +94,12 @@ const createUser = async (
 ): Promise<UserResponse> => {
   try {
     const formData = new FormData();
-    formData.append('userName', userData.userName);
-    formData.append('userEmail', userData.userEmail);
+    if (userData.userName) {
+      formData.append('userName', userData.userName);
+    }
+    if (userData.userEmail) {
+      formData.append('userEmail', userData.userEmail);
+    }
 
     if (userData.userBirthDay) {
       formData.append('userBirthDay', userData.userBirthDay);

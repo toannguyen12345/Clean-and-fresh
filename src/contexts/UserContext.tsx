@@ -38,8 +38,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           Array.isArray(result.data) ? result.data[0] : result.data
         ) as UserInfo;
         setUserData(user);
-        if (user.IMG) {
-          setUserAvatar(user.IMG);
+        if (user.image) {
+          setUserAvatar(user.image);
         }
       }
     } else {
