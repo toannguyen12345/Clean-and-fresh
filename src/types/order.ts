@@ -27,7 +27,7 @@ export type ShipperOrderStatus =
   | 'delivered'
   | 'canceled';
 
-export interface User {
+export interface OrderUser {
   _id?: string;
   userName: string;
   userAddress: string;

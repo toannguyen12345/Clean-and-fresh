@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BsBox } from 'react-icons/bs';
 
-import type { ShipperOrderStatus, OrderItem, User } from '@/types';
+import type { ShipperOrderStatus, OrderItem, OrderUser } from '@/types';
 import { calculateItemsCount } from '@/utils';
 import { SHIPPER_ORDER_STATUS_OPTIONS } from '@/constants';
 import { InfiniteScroll, Select } from '@/components';
@@ -9,7 +9,7 @@ import { InfiniteScroll, Select } from '@/components';
 interface Order {
   _id: string;
   items: OrderItem[];
-  userId?: User;
+  userId?: OrderUser;
   paymentStatus: ShipperOrderStatus;
 }
 
