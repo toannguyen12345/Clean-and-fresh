@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, generatePath } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { DataTable, Button } from '@/components';
@@ -13,7 +13,7 @@ const mockShippers: User[] = [
     userBirthDay: '1990-05-15',
     userEmail: 'shippera@example.com',
     userAddress: '123 Đường ABC, Quận 1, TP.HCM',
-    IMG: 'https://via.placeholder.com/50',
+    image: 'https://via.placeholder.com/50',
   },
   {
     _id: '2',
@@ -21,7 +21,7 @@ const mockShippers: User[] = [
     userBirthDay: '1995-08-20',
     userEmail: 'shipperb@example.com',
     userAddress: '456 Đường XYZ, Quận 2, TP.HCM',
-    IMG: 'https://via.placeholder.com/50',
+    image: 'https://via.placeholder.com/50',
   },
   {
     _id: '3',
@@ -36,7 +36,7 @@ const mockShippers: User[] = [
     userBirthDay: '1992-03-25',
     userEmail: 'shipperd@example.com',
     userAddress: '321 Đường GHI, Quận 4, TP.HCM',
-    IMG: 'https://via.placeholder.com/50',
+    image: 'https://via.placeholder.com/50',
   },
 ];
 
@@ -48,7 +48,7 @@ const ShipperTablePage = () => {
   };
 
   const handleUpdateShipper = (id: string) => {
-    navigate(USER_ROUTES.US0017_EDIT_SHIPPER.replace(':id', id));
+    navigate(generatePath(USER_ROUTES.US0017_EDIT_SHIPPER, { id }));
   };
 
   const columns: ColumnDef<User>[] = [
@@ -58,9 +58,9 @@ const ShipperTablePage = () => {
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-            {row.original.IMG ? (
+            {row.original.image ? (
               <img
-                src={row.original.IMG}
+                src={row.original.image}
                 alt={row.original.userName}
                 className="w-full h-full object-cover"
               />
@@ -86,7 +86,9 @@ const ShipperTablePage = () => {
       header: 'Ngày sinh',
       cell: ({ row }) => (
         <span className="text-gray-700">
-          {new Date(row.original.userBirthDay).toLocaleDateString('vi-VN')}
+          {row.original.userBirthDay
+            ? new Date(row.original.userBirthDay).toLocaleDateString('vi-VN')
+            : '-'}
         </span>
       ),
     },

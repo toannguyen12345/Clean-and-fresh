@@ -1,54 +1,21 @@
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 
+import axiosInstance from '@/lib/axios';
 import type { RoleInfo } from '@/types/common';
+import type { UserData } from '@/types/user';
+import type { Credentials, AuthResponse, JwtPayload } from '@/types/auth';
 
-export type { RoleInfo };
+export type { RoleInfo, Credentials, AuthResponse, JwtPayload };
 
-interface UserData {
-  account: string;
-  password: string;
-  userName: string;
-  userEmail: string;
-  roles?: string | number;
-  phone?: string;
-  address?: string;
-  country?: string;
-  img?: string;
-}
-
-interface Credentials {
-  account: string;
-  password: string;
-}
-
-interface AuthResponse {
-  success: boolean;
-  message: string;
-  data?: Record<string, unknown>;
-  error?: Record<string, unknown>;
-  token?: string;
-  userInfo?: JwtPayload;
-}
-
-export interface JwtPayload {
-  id: string;
-  idAccount: string;
-  account?: string;
-  roles: string[];
-  exp?: number;
-  iat?: number;
-}
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
-const AUTH_ENDPOINT = `${API_BASE_URL}/API/account`;
+const AUTH_ENDPOINT = 'API/account';
 
 const setAuthToken = (token: string | null): void => {
   if (token) {
     localStorage.setItem('authToken', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   } else {
     localStorage.removeItem('authToken');
-    delete axios.defaults.headers.common['Authorization'];
+    delete axiosInstance.defaults.headers.common['Authorization'];
   }
 };
 
@@ -58,7 +25,7 @@ const getAuthToken = (): string | null => {
 
 const removeAuthToken = (): void => {
   localStorage.removeItem('authToken');
-  delete axios.defaults.headers.common['Authorization'];
+  delete axiosInstance.defaults.headers.common['Authorization'];
 };
 
 const register = async (userData: UserData): Promise<AuthResponse> => {
@@ -67,13 +34,13 @@ const register = async (userData: UserData): Promise<AuthResponse> => {
     roles: userData.roles ?? 1,
   };
   try {
-    const response = await axios.post(
+    const response = (await axiosInstance.post(
       `${AUTH_ENDPOINT}/register`,
       dataWithDefaultRole,
-    );
+    )) as Record<string, unknown>;
     return {
       success: true,
-      data: response.data,
+      data: response,
       message: 'Đăng ký thành công',
     };
   } catch (error) {
@@ -90,16 +57,19 @@ const register = async (userData: UserData): Promise<AuthResponse> => {
 
 const signin = async (credentials: Credentials): Promise<AuthResponse> => {
   try {
-    const response = await axios.post(`${AUTH_ENDPOINT}/sigin`, credentials);
+    const response = (await axiosInstance.post(
+      `${AUTH_ENDPOINT}/sigin`,
+      credentials,
+    )) as Record<string, unknown>;
 
-    if (response.data.token) {
-      setAuthToken(response.data.token);
+    if (response.token) {
+      setAuthToken(response.token as string);
 
       return {
         success: true,
-        data: response.data,
-        token: response.data.token,
-        message: response.data.message || 'Đăng nhập thành công',
+        data: response,
+        token: response.token as string,
+        message: (response.message as string) || 'Đăng nhập thành công',
       };
     }
 
@@ -137,15 +107,15 @@ const verifyToken = async (): Promise<AuthResponse> => {
       };
     }
 
-    const response = await axios.get(`${AUTH_ENDPOINT}/test`, {
+    const response = (await axiosInstance.get(`${AUTH_ENDPOINT}/test`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    });
+    })) as Record<string, unknown>;
 
     return {
       success: true,
-      data: response.data,
+      data: response,
       message: 'Token hợp lệ',
     };
   } catch (error) {
@@ -164,48 +134,6 @@ const verifyToken = async (): Promise<AuthResponse> => {
   }
 };
 
-const isTokenExpired = (): boolean => {
-  const token = getAuthToken();
-  if (!token) return true;
-
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(''),
-    );
-    const decoded = JSON.parse(jsonPayload) as JwtPayload;
-    if (!decoded.exp) return true;
-
-    const currentTime = Date.now() / 1000;
-    return (decoded.exp as number) < currentTime;
-  } catch {
-    return true;
-  }
-};
-
-const getCurrentUser = (): JwtPayload | null => {
-  const token = getAuthToken();
-  if (!token) return null;
-
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(''),
-    );
-    return JSON.parse(jsonPayload) as JwtPayload;
-  } catch {
-    return null;
-  }
-};
-
 const authService = {
   register,
   signin,
@@ -214,20 +142,6 @@ const authService = {
   setAuthToken,
   getAuthToken,
   removeAuthToken,
-  isTokenExpired,
-  getCurrentUser,
 };
 
 export default authService;
-
-export {
-  register,
-  signin,
-  logout,
-  verifyToken,
-  setAuthToken,
-  getAuthToken,
-  removeAuthToken,
-  isTokenExpired,
-  getCurrentUser,
-};

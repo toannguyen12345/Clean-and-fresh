@@ -4,42 +4,94 @@ import {
   useState,
   useCallback,
   ReactNode,
+  useEffect,
 } from 'react';
 
+import type { UserInfo } from '@/types/user';
+import authService from '@/apis/auth';
+import userService from '@/apis/user';
+
 interface UserContextType {
+  userData: UserInfo | null;
   userAvatar: string;
+  setUserData: (data: UserInfo | null) => void;
   setUserAvatar: (avatar: string) => void;
+  loadUserData: () => Promise<void>;
   refreshUserAvatar: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const [userData, setUserData] = useState<UserInfo | null>(null);
   const [userAvatar, setUserAvatar] = useState(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
   );
 
-  const refreshUserAvatar = useCallback(async () => {
-    const authService = (await import('@/apis/Authentication/auth')).default;
-    const userService = (await import('@/apis/User/user')).default;
+  const loadUserData = useCallback(async () => {
+    const token = authService.getAuthToken();
+    if (!token) {
+      setUserData(null);
+      setUserAvatar(
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+      );
+      return;
+    }
 
-    const currentUser = authService.getCurrentUser();
-    if (currentUser && currentUser.id) {
-      const result = await userService.getUserById(currentUser.id);
+    try {
+      const result = await userService.getMe();
       if (result.success && result.data) {
-        const userData = (Array.isArray(result.data)
+        const rawData = (Array.isArray(result.data)
           ? result.data[0]
           : result.data) as unknown as Record<string, unknown>;
-        if (userData.IMG) {
-          setUserAvatar(userData.IMG as string);
+        const user: UserInfo = {
+          ...rawData,
+          image: (rawData.IMG as string) || (rawData.image as string),
+        } as UserInfo;
+        setUserData(user);
+        if (user.image) {
+          setUserAvatar(user.image);
         }
+      } else {
+        setUserData(null);
       }
+    } catch (error) {
+      setUserData(null);
+      setUserAvatar(
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+      );
     }
   }, []);
 
+  const refreshUserAvatar = useCallback(async () => {
+    await loadUserData();
+  }, [loadUserData]);
+
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'authToken') {
+        loadUserData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [loadUserData]);
+
   return (
     <UserContext.Provider
-      value={{ userAvatar, setUserAvatar, refreshUserAvatar }}
+      value={{
+        userData,
+        userAvatar,
+        setUserData,
+        setUserAvatar,
+        loadUserData,
+        refreshUserAvatar,
+      }}
     >
       {children}
     </UserContext.Provider>

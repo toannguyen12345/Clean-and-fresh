@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { LoginPopup, UserAvatar, Dropdown, Button } from '@/components';
 import { USER_ROUTES } from '@/constants/routes';
-import authService from '@/apis/Authentication/auth';
+import authService from '@/apis/auth';
 import { useUser } from '@/contexts/UserContext';
 
 const Navbar = (): JSX.Element => {

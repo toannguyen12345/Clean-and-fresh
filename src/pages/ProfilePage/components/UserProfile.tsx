@@ -11,8 +11,7 @@ import {
   userProfileSchema,
   UserProfileFormData,
 } from '@/schemas/userProfile.schema';
-import authService from '@/apis/Authentication/auth';
-import userService from '@/apis/User/user';
+import userService from '@/apis/user';
 import { useUser } from '@/contexts/UserContext';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,13 +24,12 @@ L.Icon.Default.mergeOptions({
 });
 
 const UserProfile = (): JSX.Element => {
-  const { refreshUserAvatar } = useUser();
+  const { userData, refreshUserAvatar } = useUser();
   const [previewImage, setPreviewImage] = useState(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
   );
   const [_isLoading, setIsLoading] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [account, setAccount] = useState('');
   const [userName, setUserName] = useState('');
   const [userAddress, setUserAddress] = useState('');
   const mapRef = useRef<L.Map | null>(null);
@@ -48,56 +46,30 @@ const UserProfile = (): JSX.Element => {
   });
 
   useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        const currentUser = authService.getCurrentUser();
-        if (!currentUser || !currentUser.id) {
-          toast.error('Không thể lấy thông tin user');
-          return;
-        }
+    if (!userData) {
+      setIsLoading(false);
+      return;
+    }
 
-        const result = await userService.getUserById(currentUser.id);
+    const userNameValue = userData.userName || '';
+    const userAddressValue = userData.userAddress || '';
 
-        if (result.success && result.data) {
-          const userData = (Array.isArray(result.data)
-            ? result.data[0]
-            : result.data) as unknown as Record<string, unknown>;
+    setUserName(userNameValue);
+    setUserAddress(userAddressValue);
 
-          const userNameValue = (userData.userName as string) || '';
-          const userAddressValue = (userData.userAddress as string) || '';
+    reset({
+      userName: userNameValue,
+      userEmail: userData.userEmail || '',
+      userBirthDay: userData.userBirthDay || '',
+      userAddress: userAddressValue,
+    });
 
-          const accountName =
-            (currentUser.account as string) ||
-            (currentUser.idAccount as string) ||
-            '';
+    if (userData.image) {
+      setPreviewImage(userData.image);
+    }
 
-          setAccount(accountName);
-          setUserName(userNameValue);
-          setUserAddress(userAddressValue);
-
-          reset({
-            account: accountName,
-            userName: userNameValue,
-            userEmail: (userData.userEmail as string) || '',
-            userBirthDay: (userData.userBirthDay as string) || '',
-            userAddress: userAddressValue,
-          });
-
-          if (userData.IMG) {
-            setPreviewImage(userData.IMG as string);
-          }
-        } else {
-          toast.error('Lấy thông tin user thất bại');
-        }
-      } catch (error) {
-        toast.error('Có lỗi xảy ra khi tải thông tin user');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserProfile();
-  }, [reset]);
+    setIsLoading(false);
+  }, [userData, reset]);
 
   useEffect(() => {
     if (!mapContainerRef.current || isMapInitialized.current) return;
@@ -159,46 +131,34 @@ const UserProfile = (): JSX.Element => {
 
   const onSubmit = async (data: UserProfileFormData) => {
     try {
-      const currentUser = authService.getCurrentUser();
-
-      if (!currentUser || !currentUser.id) {
+      if (!userData || !userData._id) {
         toast.error('Không thể lấy thông tin user');
         return;
       }
 
-      const updatePayload = {
-        userName: data.userName || userName,
-        userEmail: data.userEmail,
-        userBirthDay: data.userBirthDay,
-        userAddress: data.userAddress || userAddress,
-      };
+      // Prepare FormData
+      const formData = new FormData();
+      formData.append('userName', data.userName || userName);
+      formData.append('userEmail', data.userEmail);
+      formData.append('userBirthDay', data.userBirthDay || '');
+      formData.append('userAddress', data.userAddress || userAddress);
 
-      const result = await userService.updateUser(
-        currentUser.id,
-        updatePayload,
-        imageFile || undefined,
-      );
+      if (imageFile) {
+        formData.append('IMG', imageFile);
+      }
+
+      const result = await userService.updateUser(userData._id, formData);
 
       if (result.success) {
         toast.success('Cập nhật thông tin thành công');
         setImageFile(null);
 
         if (result.data) {
-          const userData = (Array.isArray(result.data)
+          const updatedData = (Array.isArray(result.data)
             ? result.data[0]
             : result.data) as unknown as Record<string, unknown>;
-          if (userData.IMG) {
-            setPreviewImage(userData.IMG as string);
-          }
-        }
-
-        const reloadResult = await userService.getUserById(currentUser.id);
-        if (reloadResult.success && reloadResult.data) {
-          const reloadedData = (Array.isArray(reloadResult.data)
-            ? reloadResult.data[0]
-            : reloadResult.data) as unknown as Record<string, unknown>;
-          if (reloadedData.IMG) {
-            setPreviewImage(reloadedData.IMG as string);
+          if (updatedData.image) {
+            setPreviewImage(updatedData.image as string);
           }
         }
 
@@ -224,15 +184,6 @@ const UserProfile = (): JSX.Element => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3 space-y-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Tên đăng nhập:
-                </label>
-                <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-600">
-                  {account}
-                </div>
-              </div>
-
               <div className="flex flex-col gap-2">
                 <Label required>Tên người dùng:</Label>
                 <Input

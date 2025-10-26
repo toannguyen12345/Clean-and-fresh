@@ -10,12 +10,16 @@ import { USER_ROUTES } from '@/constants/routes';
 import { formatDate } from '@/utils';
 import { FORMAT_DATE } from '@/constants';
 
-const EditUserPage = () => {
+interface EditUserPageProps {
+  loading?: boolean;
+}
+
+const EditUserPage = ({ loading = false }: EditUserPageProps) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [_selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(loading);
 
   const today = formatDate(new Date(), FORMAT_DATE.INPUT);
 
@@ -137,16 +141,19 @@ const EditUserPage = () => {
               type="submit"
               color="success"
               className="flex-1"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}
+              loading={isSubmitting || loading}
             >
-              {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật người dùng'}
+              {isSubmitting || loading
+                ? 'Đang cập nhật...'
+                : 'Cập nhật người dùng'}
             </Button>
             <Button
               type="button"
               color="danger"
               className="flex-1"
               onClick={handleCancel}
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}
             >
               Hủy
             </Button>
