@@ -8,15 +8,16 @@ import {
 } from 'react';
 
 import type { UserInfo } from '@/types/user';
-import authService from '@/apis/auth';
 import userService from '@/apis/user';
+import { getAuthToken } from '@/utils/auth';
 
 interface UserContextType {
   userData: UserInfo | null;
   userAvatar: string;
+  isLoading: boolean;
   setUserData: (data: UserInfo | null) => void;
   setUserAvatar: (avatar: string) => void;
-  loadUserData: () => Promise<void>;
+  loadUserData: () => Promise<UserInfo | null>;
   refreshUserAvatar: () => Promise<void>;
 }
 
@@ -27,15 +28,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [userAvatar, setUserAvatar] = useState(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
   );
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadUserData = useCallback(async () => {
-    const token = authService.getAuthToken();
+  const loadUserData = useCallback(async (): Promise<UserInfo | null> => {
+    setIsLoading(true);
+    const token = getAuthToken();
     if (!token) {
       setUserData(null);
       setUserAvatar(
         'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
       );
-      return;
+      setIsLoading(false);
+      return null;
     }
 
     try {
@@ -52,14 +56,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         if (user.image) {
           setUserAvatar(user.image);
         }
+        return user;
       } else {
         setUserData(null);
+        return null;
       }
     } catch (error) {
       setUserData(null);
       setUserAvatar(
         'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
       );
+      return null;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -69,7 +78,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     loadUserData();
-  }, [loadUserData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -80,13 +90,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [loadUserData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <UserContext.Provider
       value={{
         userData,
         userAvatar,
+        isLoading,
         setUserData,
         setUserAvatar,
         loadUserData,

@@ -1,4 +1,4 @@
-import type { UserInfo } from '@/types/user';
+import type { UserInfo, CreateUserPayload } from '@/types/user';
 
 export const filterUsersByRole = (
   roleName: string,
@@ -83,4 +83,29 @@ export const findUserByEmail = (
 
 export const isEmailExists = (email: string, users: UserInfo[]): boolean => {
   return users.some((user) => user.userEmail === email);
+};
+
+export const buildUserFormData = (
+  userData: CreateUserPayload,
+  imageFile?: File,
+): FormData => {
+  const formData = new FormData();
+
+  if (userData.userName) {
+    formData.append('userName', userData.userName);
+  }
+  if (userData.userEmail) {
+    formData.append('userEmail', userData.userEmail);
+  }
+  if (userData.userBirthDay) {
+    formData.append('userBirthDay', userData.userBirthDay);
+  }
+  if (userData.userAddress) {
+    formData.append('userAddress', userData.userAddress);
+  }
+  if (imageFile) {
+    formData.append('IMG', imageFile);
+  }
+
+  return formData;
 };

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
+import { removeAuthToken } from '@/utils/auth';
+
 interface NavItem {
   path: string;
   icon: string;
@@ -19,6 +21,7 @@ const SidebarShipper = () => {
   };
 
   const handleLogout = () => {
+    removeAuthToken();
     navigate('/');
   };
 

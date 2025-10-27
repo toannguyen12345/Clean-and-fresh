@@ -20,10 +20,17 @@ axiosInstance.interceptors.request.use((config) => {
 
 axiosInstance.interceptors.response.use(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (response: AxiosResponse<any>) => {
+  (response: AxiosResponse<any>): any => {
     return response.data;
   },
   (error: AxiosError<IResponseErrorAxios>) => {
+    // Handle 401 - token expired
+    if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      delete axiosInstance.defaults.headers.common['Authorization'];
+      // Redirect to home
+      window.location.href = '/';
+    }
     return Promise.reject(error.response?.data.errors);
   },
 );

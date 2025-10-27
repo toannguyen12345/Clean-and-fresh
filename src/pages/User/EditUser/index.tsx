@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 
 import { Input, Button, FormField } from '@/components';
-import { editUserSchema, EditUserFormData } from '@/schemas/user';
+import { editUserSchema, EditUserFormData } from '@/schemas/account';
 import { USER_ROUTES } from '@/constants/routes';
 import { formatDate } from '@/utils';
 import { FORMAT_DATE } from '@/constants';

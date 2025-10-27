@@ -11,9 +11,10 @@ import {
   registerSchema,
   LoginFormData,
   RegisterFormData,
-} from '@/schemas/user';
+} from '@/schemas/account';
 import authService from '@/apis/auth';
 import { USER_ROUTES } from '@/constants/routes';
+import { useUser } from '@/contexts/UserContext';
 
 interface LoginPopupProps {
   setShowLogin: (show: boolean) => void;
@@ -22,6 +23,7 @@ interface LoginPopupProps {
 
 const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
   const navigate = useNavigate();
+  const { loadUserData } = useUser();
   const [currentState, setCurrentState] = useState<'login' | 'register'>(
     'login',
   );
@@ -58,13 +60,20 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
 
       if (result.success) {
         toast.success(result.message || 'Đăng nhập thành công!');
+        const userData = await loadUserData();
         onLoginSuccess?.();
         setShowLogin(false);
 
-        // Redirect to home, UserContext will load user data and handle role-based routing
-        navigate(USER_ROUTES.US0001_HOME);
+        // Redirect theo role
+        const roleCode = userData?.roles?.[0]?.roleCode;
+        if (roleCode === 2) {
+          navigate(USER_ROUTES.US0013_ADMIN_DASHBOARD);
+        } else if (roleCode === 3) {
+          navigate(USER_ROUTES.US0012_SHIPPER_ORDERS);
+        } else {
+          navigate(USER_ROUTES.US0001_HOME);
+        }
       } else {
-        setError(result.message || 'Đăng nhập thất bại');
         toast.error(result.message || 'Đăng nhập thất bại');
       }
     } catch (err) {
@@ -92,7 +101,6 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
         setCurrentState('login');
         registerForm.reset();
       } else {
-        setError(result.message || 'Đăng ký thất bại');
         toast.error(result.message || 'Đăng ký thất bại');
       }
     } catch (err) {

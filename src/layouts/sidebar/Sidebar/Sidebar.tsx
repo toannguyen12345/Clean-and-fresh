@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
+import { removeAuthToken } from '@/utils/auth';
+
 interface NavItem {
   path: string;
   icon: string;
@@ -25,9 +27,7 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    // Clear authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    removeAuthToken();
     navigate('/');
   };
 

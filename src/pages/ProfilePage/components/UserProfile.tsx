@@ -7,10 +7,7 @@ import 'leaflet/dist/leaflet.css';
 
 import { Button, Input, Label, Textarea } from '@/components';
 import { UserAvatar } from '@/components/UserAvatar';
-import {
-  userProfileSchema,
-  UserProfileFormData,
-} from '@/schemas/userProfile.schema';
+import { userProfileSchema, UserProfileFormData } from '@/schemas/user';
 import userService from '@/apis/user';
 import { useUser } from '@/contexts/UserContext';
 
