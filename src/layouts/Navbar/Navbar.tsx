@@ -1,16 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { LoginPopup, UserAvatar, Dropdown, Button } from '@/components';
 import { USER_ROUTES } from '@/constants/routes';
+import { getAuthToken, removeAuthToken } from '@/utils/auth';
+import { useUser } from '@/contexts/UserContext';
 
 const Navbar = (): JSX.Element => {
   const [menu, setMenu] = useState<string>('Home');
   const [showLogin, setShowLogin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const userAvatar =
-    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
+  const { userAvatar } = useUser();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = getAuthToken();
+      setIsLoggedIn(!!token);
+    };
+
+    checkLoginStatus();
+  }, []);
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
@@ -18,7 +28,9 @@ const Navbar = (): JSX.Element => {
   };
 
   const handleLogout = () => {
+    removeAuthToken();
     setIsLoggedIn(false);
+    navigate('/');
   };
 
   return (

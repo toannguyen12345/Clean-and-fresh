@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { XIcon } from '@/icons';
 import { Input, Button } from '@/components';
@@ -9,23 +11,24 @@ import {
   registerSchema,
   LoginFormData,
   RegisterFormData,
-} from '@/schemas/user';
+} from '@/schemas/account';
+import authService from '@/apis/auth';
+import { USER_ROUTES } from '@/constants/routes';
+import { useUser } from '@/contexts/UserContext';
 
 interface LoginPopupProps {
   setShowLogin: (show: boolean) => void;
   onLoginSuccess?: () => void;
 }
 
-const MOCK_ACCOUNT = {
-  username: 'admin',
-  password: '123',
-};
-
 const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
+  const navigate = useNavigate();
+  const { loadUserData } = useUser();
   const [currentState, setCurrentState] = useState<'login' | 'register'>(
     'login',
   );
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
   const loginForm = useForm<LoginFormData>({
@@ -46,25 +49,67 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
     },
   });
 
-  const onLoginSubmit = (data: LoginFormData) => {
+  const onLoginSubmit = async (data: LoginFormData) => {
     setError('');
-    if (
-      data.account === MOCK_ACCOUNT.username &&
-      data.password === MOCK_ACCOUNT.password
-    ) {
-      alert('Đăng nhập thành công!');
-      onLoginSuccess?.();
-      setShowLogin(false);
-    } else {
-      setError('Tài khoản hoặc mật khẩu không đúng');
+    setIsLoading(true);
+    try {
+      const result = await authService.signin({
+        account: data.account,
+        password: data.password,
+      });
+
+      if (result.success) {
+        toast.success(result.message || 'Đăng nhập thành công!');
+        const userData = await loadUserData();
+        onLoginSuccess?.();
+        setShowLogin(false);
+
+        // Redirect theo role
+        const roleCode = userData?.roles?.[0]?.roleCode;
+        if (roleCode === 2) {
+          navigate(USER_ROUTES.US0013_ADMIN_DASHBOARD);
+        } else if (roleCode === 3) {
+          navigate(USER_ROUTES.US0012_SHIPPER_ORDERS);
+        } else {
+          navigate(USER_ROUTES.US0001_HOME);
+        }
+      } else {
+        toast.error(result.message || 'Đăng nhập thất bại');
+      }
+    } catch (err) {
+      const errorMessage = 'Có lỗi xảy ra khi đăng nhập';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const onRegisterSubmit = (_data: RegisterFormData) => {
+  const onRegisterSubmit = async (data: RegisterFormData) => {
     setError('');
-    alert('Đăng ký thành công!');
-    setCurrentState('login');
-    registerForm.reset();
+    setIsLoading(true);
+    try {
+      const result = await authService.register({
+        account: data.account,
+        password: data.password,
+        userName: data.userName,
+        userEmail: data.userEmail,
+      });
+
+      if (result.success) {
+        toast.success(result.message || 'Đăng ký thành công!');
+        setCurrentState('login');
+        registerForm.reset();
+      } else {
+        toast.error(result.message || 'Đăng ký thất bại');
+      }
+    } catch (err) {
+      const errorMessage = 'Có lỗi xảy ra khi đăng ký';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -139,8 +184,9 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
               color="success"
               size="lg"
               className="w-full bg-[#28a745] hover:bg-[#218838] text-white"
+              loading={isLoading}
             >
-              Đăng nhập
+              {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
           </form>
         ) : (
@@ -207,8 +253,9 @@ const LoginPopup = ({ setShowLogin, onLoginSuccess }: LoginPopupProps) => {
               color="success"
               size="lg"
               className="w-full bg-[#28a745] hover:bg-[#218838] text-white"
+              loading={isLoading}
             >
-              Tạo tài khoản mới
+              {isLoading ? 'Đang đăng ký...' : 'Tạo tài khoản mới'}
             </Button>
           </form>
         )}

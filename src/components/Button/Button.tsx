@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 
+import { LoadingIcon } from '@/icons';
+
 export interface IButtonProps {
   children: ReactNode;
   color?:
@@ -17,6 +19,7 @@ export interface IButtonProps {
   size?: 'sm' | 'md' | 'lg';
   block?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
   className?: string;
@@ -29,6 +32,7 @@ const Button = ({
   size = 'md',
   block = false,
   disabled = false,
+  loading = false,
   onClick,
   type = 'button',
   className = '',
@@ -74,18 +78,24 @@ const Button = ({
     'font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary';
   const borderClass = outline ? 'border-2' : 'border border-transparent';
   const blockClass = block ? 'w-full' : '';
-  const disabledClass = disabled
-    ? 'opacity-50 cursor-not-allowed'
-    : 'cursor-pointer';
+  const disabledClass =
+    loading || disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
 
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={loading || disabled}
       className={`${baseClasses} ${colorClasses[color]} ${sizeClasses[size]} ${borderClass} ${blockClass} ${disabledClass} ${className}`}
     >
-      {children}
+      {loading ? (
+        <span className="inline-flex items-center gap-2">
+          <LoadingIcon />
+          {children}
+        </span>
+      ) : (
+        children
+      )}
     </button>
   );
 };
