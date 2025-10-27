@@ -1,51 +1,52 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { DataTable, Button } from '@/components';
+import { DataTable, Button, Loading } from '@/components';
 import { Discount } from '@/types/discount';
 import { USER_ROUTES } from '@/constants/routes';
 import { formatDate } from '@/utils/date';
-
-const mockDiscounts: Discount[] = [
-  {
-    _id: '1',
-    discountType: 'percent',
-    discountName: 'Giảm giá mùa hè',
-    discountCode: 'SUMMER2024',
-    discountValue: 20,
-    startDate: '2024-06-01',
-    expiryDate: '2024-08-31',
-  },
-  {
-    _id: '2',
-    discountType: 'fixed',
-    discountName: 'Ưu đãi khách hàng mới',
-    discountCode: 'NEWUSER',
-    discountValue: 50000,
-    startDate: '2024-01-01',
-    expiryDate: '2024-12-31',
-  },
-  {
-    _id: '3',
-    discountType: 'percent',
-    discountName: 'Flash sale',
-    discountCode: 'FLASH50',
-    discountValue: 50,
-    startDate: '2024-05-15',
-    expiryDate: '2024-05-16',
-  },
-];
+import { listDiscounts, deleteDiscount } from '@/apis/discount';
 
 const DiscountTablePage = () => {
   const navigate = useNavigate();
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDiscounts = async () => {
+    try {
+      setLoading(true);
+      const result = await listDiscounts();
+      if (result.success && result.data) {
+        setDiscounts(result.data);
+      } else {
+        toast.error('Lấy danh sách mã giảm giá thất bại');
+      }
+    } catch (error) {
+      console.error('Fetch discounts error:', error);
+      toast.error('Có lỗi xảy ra khi lấy danh sách mã giảm giá');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDiscounts();
+  }, []);
 
   const handleAddDiscount = () => {
     navigate(USER_ROUTES.US0009_ADD_DISCOUNT);
   };
 
-  const handleDeleteDiscount = (id: string) => {
-    toast.success(`Xóa mã giảm giá ID: ${id} thành công!`);
+  const handleDeleteDiscount = async (id: string) => {
+    try {
+      await deleteDiscount(id);
+      toast.success('Xóa mã giảm giá thành công!');
+      fetchDiscounts();
+    } catch (error) {
+      toast.error('Xóa mã giảm giá thất bại');
+    }
   };
 
   const handleUpdateDiscount = (id: string) => {
@@ -116,22 +117,30 @@ const DiscountTablePage = () => {
         <div className="flex gap-2">
           <Button
             size="sm"
-            color="primary"
-            onClick={() => handleUpdateDiscount(row.original._id)}
-          >
-            Sửa
-          </Button>
-          <Button
-            size="sm"
             color="danger"
             onClick={() => handleDeleteDiscount(row.original._id)}
           >
             Xóa
           </Button>
+          <Button
+            size="sm"
+            color="success"
+            onClick={() => handleUpdateDiscount(row.original._id)}
+          >
+            Cập nhật
+          </Button>
         </div>
       ),
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full p-6">
@@ -144,7 +153,7 @@ const DiscountTablePage = () => {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={mockDiscounts} />
+      <DataTable columns={columns} data={discounts} />
     </div>
   );
 };

@@ -1,10 +1,6 @@
-export const LoadingIcon = ({
-  className = 'h-4 w-4',
-}: {
-  className?: string;
-}) => (
+export const LoadingIcon = ({ className = '' }: { className?: string }) => (
   <svg
-    className={`animate-spin ${className}`}
+    className={`animate-spin h-4 w-4 ${className}`}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"

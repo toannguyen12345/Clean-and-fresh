@@ -1,50 +1,49 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { DataTable, Button } from '@/components';
+import { DataTable, Button, Loading } from '@/components';
 import { User } from '@/types/user';
 import { USER_ROUTES } from '@/constants/routes';
-
-const mockUsers: User[] = [
-  {
-    _id: '1',
-    userName: 'Nguyễn Văn A',
-    userBirthDay: '1990-05-15',
-    userEmail: 'nguyenvana@example.com',
-    userAddress: '123 Đường ABC, Quận 1, TP.HCM',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    _id: '2',
-    userName: 'Trần Thị B',
-    userBirthDay: '1995-08-20',
-    userEmail: 'tranthib@example.com',
-    userAddress: '456 Đường XYZ, Quận 2, TP.HCM',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    _id: '3',
-    userName: 'Lê Văn C',
-    userBirthDay: '1988-12-10',
-    userEmail: 'levanc@example.com',
-    userAddress: '789 Đường DEF, Quận 3, TP.HCM',
-  },
-  {
-    _id: '4',
-    userName: 'Phạm Thị D',
-    userBirthDay: '1992-03-25',
-    userEmail: 'phamthid@example.com',
-    userAddress: '321 Đường GHI, Quận 4, TP.HCM',
-    image: 'https://via.placeholder.com/50',
-  },
-];
+import userService from '@/apis/user';
+import { filterUsersByRoleCode } from '@/utils/user';
 
 const UserTablePage = () => {
   const navigate = useNavigate();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDeleteUser = (id: string) => {
-    toast.success(`Xóa người dùng ID: ${id} thành công!`);
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const result = await userService.listUsers();
+      if (result.success && result.users) {
+        const filteredUsers = filterUsersByRoleCode(1, result.users);
+        setUsers(filteredUsers);
+      } else {
+        toast.error('Lấy danh sách người dùng thất bại');
+      }
+    } catch (error) {
+      console.error('Fetch users error:', error);
+      toast.error('Có lỗi xảy ra khi lấy danh sách người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleDeleteUser = async (id: string) => {
+    try {
+      await userService.deleteUser(id);
+      toast.success('Xóa người dùng thành công!');
+      fetchUsers();
+    } catch (error) {
+      toast.error('Xóa người dùng thất bại');
+    }
   };
 
   const handleUpdateUser = (id: string) => {
@@ -132,13 +131,21 @@ const UserTablePage = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
       </div>
       <DataTable
-        data={mockUsers}
+        data={users}
         columns={columns}
         searchPlaceholder="Tìm kiếm theo tên..."
         searchColumn="userName"

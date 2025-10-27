@@ -1,50 +1,58 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 
 import { ProductFormData } from '@/schemas/product';
 import { USER_ROUTES } from '@/constants/routes';
+import { getProductById, updateProduct } from '@/apis/product';
+import { buildProductFormData } from '@/utils/product';
 
 import { InputForm } from '../InputForm';
-
-// Mock function to get product by ID
-const getProductById = async (_id: string): Promise<ProductFormData | null> => {
-  // Mock: Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Mock data
-  return {
-    productName: 'Táo Fuji Nhật Bản',
-    productDescription:
-      'Táo Fuji nhập khẩu trực tiếp từ Nhật Bản, giòn ngọt, giàu dinh dưỡng.',
-    productPrice: 150000,
-    productQuantity: 10,
-    category: 'Fruiting',
-    image: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400',
-  };
-};
 
 const EditProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [initialData, setInitialData] = useState<ProductFormData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
       if (id) {
-        const data = await getProductById(id);
-        setInitialData(data);
-        setIsLoading(false);
+        try {
+          const product = await getProductById(id);
+
+          if (product && Object.keys(product).length > 0) {
+            setInitialData({
+              productName: product.productName || '',
+              productDescription: product.productDescription || '',
+              productPrice: product.ProductPrice || 0,
+              productQuantity: product.ProductQuantity || 0,
+              category: product.category || 'Leafy',
+              image: product.image || product.IMG || '',
+            });
+          }
+        } catch (error) {
+          console.error('Fetch error:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     fetchProduct();
   }, [id]);
 
-  const handleSubmit = (data: ProductFormData, _file?: File) => {
-    toast.success(
-      `Cập nhật sản phẩm thành công!\nID: ${id}\nTên: ${data.productName}\nGiá: ${data.productPrice.toLocaleString('vi-VN')} VNĐ`,
-    );
+  const handleSubmit = async (data: ProductFormData, file?: File) => {
+    setIsSubmitting(true);
+    const formData = buildProductFormData(data, file);
+
+    try {
+      if (id) {
+        await updateProduct(id, formData);
+      }
+    } catch (error) {
+      // Ignore API errors
+    }
+
     navigate(USER_ROUTES.US0005_PRODUCT_LIST);
   };
 
@@ -74,6 +82,7 @@ const EditProductPage = () => {
       initialData={initialData}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
+      isLoading={isSubmitting}
     />
   );
 };

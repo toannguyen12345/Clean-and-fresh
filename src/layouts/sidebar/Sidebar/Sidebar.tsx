@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
+import { removeAuthToken } from '@/utils/auth';
+
 interface NavItem {
   path: string;
   icon: string;
@@ -9,9 +11,9 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
-  { path: '/admin/listUser', icon: '👥', label: 'Người dùng' },
+  { path: '/admin/users', icon: '👥', label: 'Người dùng' },
   { path: '/admin/products', icon: '🥬', label: 'Sản phẩm' },
-  { path: '/admin/listShipper', icon: '🚚', label: 'Shipper' },
+  { path: '/admin/shippers', icon: '🚚', label: 'Shipper' },
   { path: '/admin/discounts', icon: '🎫', label: 'Mã giảm giá' },
 ];
 
@@ -25,9 +27,7 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    // Clear authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    removeAuthToken();
     navigate('/');
   };
 

@@ -1,50 +1,49 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { useNavigate, generatePath } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { DataTable, Button } from '@/components';
+import { DataTable, Button, Loading } from '@/components';
 import { User } from '@/types/user';
 import { USER_ROUTES } from '@/constants/routes';
-
-const mockShippers: User[] = [
-  {
-    _id: '1',
-    userName: 'Nguyễn Văn Shipper A',
-    userBirthDay: '1990-05-15',
-    userEmail: 'shippera@example.com',
-    userAddress: '123 Đường ABC, Quận 1, TP.HCM',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    _id: '2',
-    userName: 'Trần Thị Shipper B',
-    userBirthDay: '1995-08-20',
-    userEmail: 'shipperb@example.com',
-    userAddress: '456 Đường XYZ, Quận 2, TP.HCM',
-    image: 'https://via.placeholder.com/50',
-  },
-  {
-    _id: '3',
-    userName: 'Lê Văn Shipper C',
-    userBirthDay: '1988-12-10',
-    userEmail: 'shipperc@example.com',
-    userAddress: '789 Đường DEF, Quận 3, TP.HCM',
-  },
-  {
-    _id: '4',
-    userName: 'Phạm Thị Shipper D',
-    userBirthDay: '1992-03-25',
-    userEmail: 'shipperd@example.com',
-    userAddress: '321 Đường GHI, Quận 4, TP.HCM',
-    image: 'https://via.placeholder.com/50',
-  },
-];
+import userService from '@/apis/user';
+import { filterUsersByRoleCode } from '@/utils/user';
 
 const ShipperTablePage = () => {
   const navigate = useNavigate();
+  const [shippers, setShippers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDeleteShipper = (id: string) => {
-    toast.success(`Xóa shipper ID: ${id} thành công!`);
+  const fetchShippers = async () => {
+    try {
+      setLoading(true);
+      const result = await userService.listUsers();
+      if (result.success && result.users) {
+        const filteredShippers = filterUsersByRoleCode(3, result.users);
+        setShippers(filteredShippers);
+      } else {
+        toast.error('Lấy danh sách shipper thất bại');
+      }
+    } catch (error) {
+      console.error('Fetch shippers error:', error);
+      toast.error('Có lỗi xảy ra khi lấy danh sách shipper');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchShippers();
+  }, []);
+
+  const handleDeleteShipper = async (id: string) => {
+    try {
+      await userService.deleteUser(id);
+      toast.success('Xóa shipper thành công!');
+      fetchShippers();
+    } catch (error) {
+      toast.error('Xóa shipper thất bại');
+    }
   };
 
   const handleUpdateShipper = (id: string) => {
@@ -132,13 +131,21 @@ const ShipperTablePage = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Quản lý shipper</h1>
       </div>
       <DataTable
-        data={mockShippers}
+        data={shippers}
         columns={columns}
         searchPlaceholder="Tìm kiếm theo tên..."
         searchColumn="userName"

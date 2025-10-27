@@ -2,16 +2,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import toast from 'react-hot-toast';
 
 import { Input, Button, FormField } from '@/components';
-import { editUserSchema, EditUserFormData } from '@/schemas/user';
+import { editUserSchema, EditUserFormData } from '@/schemas/account';
 import { USER_ROUTES } from '@/constants/routes';
 import { formatDate } from '@/utils';
 import { FORMAT_DATE } from '@/constants';
+import { buildUserFormData } from '@/utils/user';
+import userService from '@/apis/user';
 
 interface EditUserPageProps {
   loading?: boolean;
+}
+
+interface UserWithImg {
+  IMG?: string;
 }
 
 const EditUserPage = ({ loading = false }: EditUserPageProps) => {
@@ -27,6 +32,7 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<EditUserFormData>({
     resolver: zodResolver(editUserSchema),
     defaultValues: {
@@ -36,6 +42,34 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
       userAddress: '',
     },
   });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (id) {
+        try {
+          const result = await userService.getUserById(id);
+
+          if (result.success && result.data && !Array.isArray(result.data)) {
+            const user = result.data;
+            reset({
+              userName: user.userName || '',
+              userBirthDay: user.userBirthDay || '',
+              userEmail: user.userEmail || '',
+              userAddress: user.userAddress || '',
+            });
+            // BE trả về IMG field, không phải image
+            const userImg = (user as UserWithImg).IMG;
+            if (userImg) {
+              setImagePreview(userImg);
+            }
+          }
+        } catch (error) {
+          console.error('Fetch user error:', error);
+        }
+      }
+    };
+    fetchUser();
+  }, [id, reset]);
 
   useEffect(() => {
     return () => {
@@ -62,14 +96,15 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
   const onSubmit = async (data: EditUserFormData) => {
     setIsSubmitting(true);
     try {
-      toast.success(
-        `Cập nhật người dùng thành công!\nID: ${id}\nTên: ${data.userName}\nEmail: ${data.userEmail}`,
-      );
-      navigate(USER_ROUTES.US0014_USER_LIST);
+      if (id) {
+        const formData = buildUserFormData(data, _selectedFile || undefined);
+        await userService.updateUser(id, formData);
+      }
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi cập nhật người dùng');
+      console.error('Update user error:', error);
     } finally {
       setIsSubmitting(false);
+      navigate(USER_ROUTES.US0014_USER_LIST);
     }
   };
 
@@ -88,11 +123,7 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         <div className="lg:col-span-2 space-y-4">
-          <FormField
-            label="Họ và Tên"
-            isRequired
-            error={errors.userName?.message}
-          >
+          <FormField label="Họ và Tên" isRequired>
             <Input
               type="text"
               placeholder="Nhập họ và tên"
@@ -101,11 +132,7 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
             />
           </FormField>
 
-          <FormField
-            label="Ngày sinh"
-            isRequired
-            error={errors.userBirthDay?.message}
-          >
+          <FormField label="Ngày sinh" isRequired>
             <Input
               type="date"
               max={today}
@@ -114,7 +141,7 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
             />
           </FormField>
 
-          <FormField label="Email" isRequired error={errors.userEmail?.message}>
+          <FormField label="Email" isRequired>
             <Input
               type="email"
               placeholder="Nhập email"
@@ -123,11 +150,7 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
             />
           </FormField>
 
-          <FormField
-            label="Địa chỉ"
-            isRequired
-            error={errors.userAddress?.message}
-          >
+          <FormField label="Địa chỉ" isRequired>
             <Input
               type="text"
               placeholder="Nhập địa chỉ"
@@ -138,17 +161,6 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
 
           <div className="flex gap-4 pt-4">
             <Button
-              type="submit"
-              color="success"
-              className="flex-1"
-              disabled={isSubmitting || loading}
-              loading={isSubmitting || loading}
-            >
-              {isSubmitting || loading
-                ? 'Đang cập nhật...'
-                : 'Cập nhật người dùng'}
-            </Button>
-            <Button
               type="button"
               color="danger"
               className="flex-1"
@@ -156,6 +168,15 @@ const EditUserPage = ({ loading = false }: EditUserPageProps) => {
               disabled={isSubmitting || loading}
             >
               Hủy
+            </Button>
+            <Button
+              type="submit"
+              color="success"
+              className="flex-1"
+              disabled={isSubmitting || loading}
+              loading={isSubmitting || loading}
+            >
+              {isSubmitting || loading ? 'Đang cập nhật...' : 'Cập nhật '}
             </Button>
           </div>
         </div>

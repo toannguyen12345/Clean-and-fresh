@@ -43,7 +43,7 @@ const Header = (): JSX.Element => {
   };
 
   return (
-    <div className="relative w-full h-[34vw] my-8 overflow-hidden rounded-2xl">
+    <div className="relative w-full h-[34vw] overflow-hidden">
       {SLIDES.map((slide, index) => (
         <div
           key={index}

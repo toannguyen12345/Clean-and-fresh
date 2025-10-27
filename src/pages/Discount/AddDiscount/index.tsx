@@ -1,18 +1,27 @@
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
 
 import { DiscountFormData } from '@/schemas/discount';
 import { USER_ROUTES } from '@/constants/routes';
+import { createDiscount } from '@/apis/discount';
+import { createDiscountPayload } from '@/utils/discount';
 
 import { InputForm } from '../InputForm';
 
 const AddDiscountPage = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (data: DiscountFormData) => {
-    toast.success(
-      `Thêm mã giảm giá thành công!\nMã: ${data.discountCode}\nGiảm: ${data.discountValue}${data.discountType === 'percent' ? '%' : ' VNĐ'}`,
-    );
+  const handleSubmit = async (data: DiscountFormData) => {
+    setIsLoading(true);
+    const payload = createDiscountPayload(data);
+
+    try {
+      await createDiscount(payload);
+    } catch (error) {
+      // Ignore API errors
+    }
+
     navigate(USER_ROUTES.US0008_DISCOUNT_LIST);
   };
 
@@ -21,7 +30,12 @@ const AddDiscountPage = () => {
   };
 
   return (
-    <InputForm mode="add" onSubmit={handleSubmit} onCancel={handleCancel} />
+    <InputForm
+      mode="add"
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      isLoading={isLoading}
+    />
   );
 };
 

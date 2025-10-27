@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Input, Button, FormField } from '@/components';
-import { editUserSchema, EditUserFormData } from '@/schemas/user';
+import { editUserSchema, EditUserFormData } from '@/schemas/account';
 
 interface UserFormProps {
   initialData?: Partial<EditUserFormData>;
