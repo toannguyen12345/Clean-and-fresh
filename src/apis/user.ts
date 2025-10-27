@@ -18,16 +18,24 @@ type ListUsersResponse = ListApiResponse<UserInfo[]>;
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const USER_ENDPOINT = `${API_BASE_URL}/API/user`;
 
-// Utility function to handle API errors
 const handleApiError = (
   error: unknown,
   defaultMessage: string,
 ): { message: string; error?: Record<string, unknown> } => {
   if (error instanceof AxiosError) {
-    const data = error.response?.data as Record<string, unknown> | undefined;
+    const data = error.response?.data;
+    let message = defaultMessage;
+
+    if (data && typeof data === 'object' && 'message' in data) {
+      const msg = data.message;
+      if (typeof msg === 'string') {
+        message = msg;
+      }
+    }
+
     return {
-      message: (data?.message as string) || defaultMessage,
-      error: error.response?.data,
+      message,
+      error: typeof data === 'object' ? data : undefined,
     };
   }
   return {
