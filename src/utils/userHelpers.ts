@@ -1,5 +1,14 @@
 import type { UserInfo, CreateUserPayload } from '@/types/user';
 
+export const isUserInfo = (data: unknown): data is UserInfo => {
+  return (
+    data !== null &&
+    typeof data === 'object' &&
+    '_id' in data &&
+    'userName' in data &&
+    'userEmail' in data
+  );
+};
 export const filterUsersByRole = (
   roleName: string,
   users: UserInfo[],
