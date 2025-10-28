@@ -44,20 +44,19 @@ const EditShipperPage = () => {
       if (id) {
         try {
           const result = await userService.getUserById(id);
+          const shipper = result.data;
 
-          if (result.success && result.data && !Array.isArray(result.data)) {
-            const shipper = result.data;
-            reset({
-              userName: shipper.userName || '',
-              userBirthDay: shipper.userBirthDay || '',
-              userEmail: shipper.userEmail || '',
-              userAddress: shipper.userAddress || '',
-            });
-            // BE trả về IMG field, không phải image
-            const shipperImg = (shipper as ShipperWithImg).IMG;
-            if (shipperImg) {
-              setImagePreview(shipperImg);
-            }
+          reset({
+            userName: shipper?.userName || '',
+            userBirthDay: shipper?.userBirthDay || '',
+            userEmail: shipper?.userEmail || '',
+            userAddress: shipper?.userAddress || '',
+          });
+
+          // BE trả về IMG field, không phải image
+          const shipperImg = (shipper as ShipperWithImg)?.IMG;
+          if (shipperImg) {
+            setImagePreview(shipperImg);
           }
         } catch (error) {
           console.error('Fetch shipper error:', error);

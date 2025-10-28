@@ -5,6 +5,7 @@ import { ProductItem } from '@/components';
 import Header from '@/layouts/Header/Header';
 import { listProducts } from '@/apis/product';
 import { USER_ROUTES } from '@/constants/routes';
+import { useDebounce } from '@/hooks/useDebounce';
 import type { ProductInfo } from '@/apis/product';
 
 const HomePage = () => {
@@ -13,6 +14,7 @@ const HomePage = () => {
   const [filteredProducts, setFilteredProducts] = useState<ProductInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -33,17 +35,19 @@ const HomePage = () => {
     fetchProducts();
   }, []);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (!query.trim()) {
+  // Filter products when debounced search query changes
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
       setFilteredProducts(products);
     } else {
       const filtered = products.filter((product) =>
-        product.productName.toLowerCase().includes(query.toLowerCase()),
+        product.productName
+          .toLowerCase()
+          .includes(debouncedSearchQuery.toLowerCase()),
       );
       setFilteredProducts(filtered);
     }
-  };
+  }, [debouncedSearchQuery, products]);
 
   const handleProductClick = (id: string) => {
     navigate(USER_ROUTES.US0002_DETAIL_FOOD.replace(':id', id));
@@ -59,7 +63,7 @@ const HomePage = () => {
             type="text"
             placeholder="Tìm kiếm sản phẩm..."
             value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#28a745]"
           />
         </div>

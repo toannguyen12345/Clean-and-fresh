@@ -11,22 +11,14 @@ type DiscountListResponse = ApiResponse<Discount[]>;
 const listDiscounts = async (): Promise<DiscountListResponse> => {
   try {
     const response = await axiosInstance.get('/API/discount/list');
-
-    if (response && typeof response === 'object' && 'discounts' in response) {
-      const discounts = response.discounts;
-      if (Array.isArray(discounts)) {
-        return {
-          success: true,
-          message: 'Lấy danh sách mã giảm giá thành công',
-          data: discounts,
-        };
-      }
-    }
+    const discounts = isDiscountArrayResponse(response)
+      ? response.foundDiscounts
+      : [];
 
     return {
       success: true,
       message: 'Lấy danh sách mã giảm giá thành công',
-      data: [],
+      data: discounts,
     };
   } catch (error) {
     return Promise.reject(error);
@@ -40,6 +32,7 @@ const getDiscountById = async (
     const response = await axiosInstance.get(
       `/API/discount/findByID/${discountId}`,
     );
+    // Type guard validates response structure, returns null if invalid
     return isDiscountResponse(response) ? response.discount : null;
   } catch (error) {
     handleApiError(error, 'Lấy mã giảm giá thất bại');

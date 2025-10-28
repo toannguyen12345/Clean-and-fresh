@@ -10,34 +10,25 @@ import {
   buildUserFormData,
   isUserInfo,
   isUserResponse,
+  isUsersArrayResponse,
   isUserDataResponse,
 } from '@/utils/user';
 import { handleApiError } from '@/utils/api';
 
 export type { RoleInfo, UserInfo, CreateUserPayload, UpdateUserPayload };
 
-type UserResponse = ApiResponse<UserInfo | UserInfo[]>;
+type UserResponse = ApiResponse<UserInfo>;
 type ListUsersResponse = ListApiResponse<UserInfo[]>;
 
 const listUsers = async (): Promise<ListUsersResponse> => {
   try {
     const response = await axiosInstance.get('/API/user/list');
-
-    if (response && typeof response === 'object' && 'users' in response) {
-      const usersList = response.users;
-      if (Array.isArray(usersList)) {
-        return {
-          success: true,
-          message: 'Lấy danh sách users thành công',
-          users: usersList,
-        };
-      }
-    }
+    const users = isUsersArrayResponse(response) ? response.users : [];
 
     return {
       success: true,
       message: 'Lấy danh sách users thành công',
-      users: [],
+      users,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Lấy danh sách users thất bại');

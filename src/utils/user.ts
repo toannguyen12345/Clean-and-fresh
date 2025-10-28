@@ -181,7 +181,7 @@ export const buildUserFormData = (
   }
 
   if (imageFile) {
-    formData.append('image', imageFile);
+    formData.append('IMG', imageFile);
   }
 
   return formData;
