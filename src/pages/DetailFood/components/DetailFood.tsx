@@ -4,11 +4,11 @@ import { useParams } from 'react-router-dom';
 import { Button, RatingStars } from '@/components';
 import { QuantitySelector } from '@/components/QuantitySelector';
 import { getProductById } from '@/apis/product';
-import type { ProductInfo } from '@/apis/product';
+import type { Product } from '@/types/product';
 
 const DetailFood = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<ProductInfo | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 

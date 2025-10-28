@@ -46,3 +46,18 @@ export interface UserData {
   country?: string;
   IMG?: string;
 }
+
+export interface UserResponse {
+  user?: UserInfo;
+}
+
+export interface UsersArrayResponse {
+  users: UserInfo[];
+}
+
+export interface UserDataResponse {
+  data: {
+    user?: UserInfo;
+    users?: UserInfo[];
+  };
+}

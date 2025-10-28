@@ -18,14 +18,14 @@ const DiscountTablePage = () => {
     try {
       setLoading(true);
       const result = await listDiscounts();
-      if (result.success && result.data) {
-        setDiscounts(result.data);
-      } else {
-        toast.error('Lấy danh sách mã giảm giá thất bại');
-      }
+      setDiscounts(result.data || []);
     } catch (error) {
       console.error('Fetch discounts error:', error);
-      toast.error('Có lỗi xảy ra khi lấy danh sách mã giảm giá');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Có lỗi xảy ra khi lấy danh sách mã giảm giá';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

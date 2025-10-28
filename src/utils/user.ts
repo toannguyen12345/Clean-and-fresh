@@ -1,5 +1,11 @@
 import type { EditUserFormData } from '@/schemas/account';
-import type { UserInfo, CreateUserPayload } from '@/types/user';
+import type {
+  UserInfo,
+  CreateUserPayload,
+  UserResponse,
+  UsersArrayResponse,
+  UserDataResponse,
+} from '@/types/user';
 
 export const formatUserAddress = (address: string): string => {
   return address || 'Chưa có địa chỉ';
@@ -8,21 +14,6 @@ export const formatUserAddress = (address: string): string => {
 export const formatUserName = (name: string): string => {
   return name || 'Khách hàng';
 };
-
-interface UserResponse {
-  user?: UserInfo;
-}
-
-interface UsersArrayResponse {
-  users: UserInfo[];
-}
-
-interface UserDataResponse {
-  data: {
-    user?: UserInfo;
-    users?: UserInfo[];
-  };
-}
 
 const hasUserKey = (obj: object): obj is { user: unknown } => {
   return 'user' in obj;

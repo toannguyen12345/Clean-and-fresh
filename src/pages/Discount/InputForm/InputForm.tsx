@@ -1,9 +1,9 @@
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm, useFormState, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Input, Button, FormField } from '@/components';
+import { Input, Button, FormField, Select } from '@/components';
 import { discountSchema, DiscountFormData } from '@/schemas/discount';
-import { DISCOUNT_TYPES } from '@/utils/discount';
+import { DISCOUNT_TYPE_OPTIONS } from '@/constants/discount';
 
 interface InputFormProps {
   mode: 'add' | 'edit';
@@ -12,13 +12,6 @@ interface InputFormProps {
   onCancel: () => void;
   isLoading?: boolean;
 }
-
-const DISCOUNT_TYPE_OPTIONS = Object.entries(DISCOUNT_TYPES).map(
-  ([value, label]) => ({
-    value,
-    label,
-  }),
-);
 
 const InputForm = ({
   mode,
@@ -41,6 +34,12 @@ const InputForm = ({
 
   const { errors } = useFormState({ control });
 
+  const getErrorMessage = (
+    fieldName: keyof DiscountFormData,
+  ): string | undefined => {
+    return errors[fieldName]?.message;
+  };
+
   const handleFormSubmit = (data: DiscountFormData) => {
     onSubmit(data);
   };
@@ -60,7 +59,7 @@ const InputForm = ({
             <Input
               {...register('discountName')}
               placeholder="Tên Giảm Giá"
-              error={errors.discountName?.message}
+              error={getErrorMessage('discountName')}
             />
           </FormField>
 
@@ -68,22 +67,29 @@ const InputForm = ({
             <Input
               {...register('discountCode')}
               placeholder="Mã Giảm Giá"
-              error={errors.discountCode?.message}
+              error={getErrorMessage('discountCode')}
             />
           </FormField>
 
           <FormField label="Kiểu Giảm Giá" isRequired>
-            <select
-              {...register('discountType')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#28a745]"
-            >
-              <option value="">Chọn kiểu giảm giá</option>
-              {DISCOUNT_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label as string}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="discountType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  options={DISCOUNT_TYPE_OPTIONS}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Chọn kiểu giảm giá"
+                  className="bg-white border-gray-300"
+                />
+              )}
+            />
+            {getErrorMessage('discountType') && (
+              <p className="text-red-500 text-sm mt-1">
+                {getErrorMessage('discountType')}
+              </p>
+            )}
           </FormField>
         </div>
 
@@ -92,7 +98,7 @@ const InputForm = ({
             <Input
               type="date"
               {...register('startDate')}
-              error={errors.startDate?.message}
+              error={getErrorMessage('startDate')}
             />
           </FormField>
 
@@ -100,7 +106,7 @@ const InputForm = ({
             <Input
               type="date"
               {...register('expiryDate')}
-              error={errors.expiryDate?.message}
+              error={getErrorMessage('expiryDate')}
             />
           </FormField>
 
@@ -109,7 +115,7 @@ const InputForm = ({
               type="number"
               {...register('discountValue', { valueAsNumber: true })}
               placeholder="Giá Trị Giảm"
-              error={errors.discountValue?.message}
+              error={getErrorMessage('discountValue')}
             />
           </FormField>
         </div>

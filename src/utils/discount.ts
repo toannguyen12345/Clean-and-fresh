@@ -2,42 +2,21 @@ import type { DiscountType } from '@/types/discount';
 import type { Discount } from '@/types/discount';
 import type { DiscountFormData } from '@/schemas/discount';
 
-interface DiscountResponse {
-  discount: Discount;
+export interface DiscountArrayResponse {
+  discounts: Discount[];
 }
-
-interface DiscountArrayResponse {
-  foundDiscounts: Discount[];
-}
-
-const hasDiscountKey = (obj: object): obj is { discount: unknown } => {
-  return 'discount' in obj;
-};
-
-export const isDiscountResponse = (data: unknown): data is DiscountResponse => {
-  return (
-    data !== null &&
-    typeof data === 'object' &&
-    hasDiscountKey(data) &&
-    typeof data.discount === 'object' &&
-    data.discount !== null
-  );
-};
-
-const hasFoundDiscountsKey = (
-  obj: object,
-): obj is { foundDiscounts: unknown } => {
-  return 'foundDiscounts' in obj;
-};
 
 export const isDiscountArrayResponse = (
   data: unknown,
 ): data is DiscountArrayResponse => {
+  if (Array.isArray(data)) {
+    return true;
+  }
   return (
     data !== null &&
     typeof data === 'object' &&
-    hasFoundDiscountsKey(data) &&
-    Array.isArray(data.foundDiscounts)
+    'discounts' in data &&
+    Array.isArray(data.discounts)
   );
 };
 
