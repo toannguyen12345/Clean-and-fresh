@@ -18,3 +18,14 @@ export const removeAuthToken = (): void => {
   localStorage.removeItem('authToken');
   delete axiosInstance.defaults.headers.common['Authorization'];
 };
+
+export const hasAuthToken = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const token =
+    localStorage.getItem('token') || localStorage.getItem('authToken');
+  return !!token;
+};
+
+export const isLoggedIn = (): boolean => {
+  return hasAuthToken();
+};

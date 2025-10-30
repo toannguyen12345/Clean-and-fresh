@@ -5,9 +5,10 @@ export const handleApiError = (
   defaultMessage: string,
 ): { message: string; error?: Record<string, unknown> } => {
   if (error instanceof AxiosError) {
-    const data = error.response?.data as Record<string, unknown> | undefined;
+    const data: Record<string, unknown> | undefined = error.response?.data;
+    const message: string = (data?.message as string) || defaultMessage;
     return {
-      message: (data?.message as string) || defaultMessage,
+      message,
       error: error.response?.data,
     };
   }

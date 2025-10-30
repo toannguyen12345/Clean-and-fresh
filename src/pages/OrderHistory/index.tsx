@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import { BsBox } from 'react-icons/bs';
 
-import type { Order } from '@/types';
-import { formatOrderPrice, formatOrderDate } from '@/utils';
-import { ORDER_STATUS_CONFIGS } from '@/constants';
+import { getOrdersByUserId } from '@/apis/order';
+import { getUserId } from '@/apis/user';
+import {
+  formatOrderPrice,
+  formatOrderDate,
+  getDeliveryStatusLabel,
+  getDeliveryStatusColor,
+} from '@/utils/order';
+import type { OrderInfo } from '@/types/order';
 
 const OrderHistoryPage = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>(
@@ -21,49 +27,18 @@ const OrderHistoryPage = () => {
     try {
       setLoading(true);
 
-      const mockOrders: Order[] = [
-        {
-          _id: '1',
-          orderNumber: 'ORD-2024-001',
-          deliverStatus: 'delivered',
-          createdAt: '2024-10-15T10:30:00Z',
-          items: [
-            { productName: 'Táo Fuji Nhật Bản', quantity: 2, price: 150000 },
-            { productName: 'Cam Sành Việt Nam', quantity: 3, price: 45000 },
-          ],
-          totalAmount: 435000,
-          paymentMethod: 'Tiền mặt',
-          orderToken: 'TXN-123456',
-        },
-        {
-          _id: '2',
-          orderNumber: 'ORD-2024-002',
-          deliverStatus: 'pending',
-          createdAt: '2024-10-18T14:20:00Z',
-          items: [
-            { productName: 'Nho Mỹ Không Hạt', quantity: 1, price: 120000 },
-            { productName: 'Dưa Hấu Không Hạt', quantity: 2, price: 35000 },
-          ],
-          totalAmount: 190000,
-          paymentMethod: 'Chuyển khoản',
-          orderToken: 'TXN-789012',
-        },
-        {
-          _id: '3',
-          orderNumber: 'ORD-2024-003',
-          deliverStatus: 'canceled',
-          createdAt: '2024-10-10T09:15:00Z',
-          items: [
-            { productName: 'Xoài Cát Hòa Lộc', quantity: 5, price: 80000 },
-          ],
-          totalAmount: 400000,
-          paymentMethod: 'Tiền mặt',
-          orderToken: 'TXN-345678',
-        },
-      ];
+      const userId = await getUserId();
+      if (!userId) {
+        setError('Vui lòng đăng nhập');
+        return;
+      }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setOrders(mockOrders);
+      const response = await getOrdersByUserId(userId);
+      if (response.success && response.orders) {
+        setOrders(response.orders);
+      } else {
+        setError(response.message || 'Không thể tải lịch sử đơn hàng');
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Không thể tải lịch sử đơn hàng',
@@ -80,8 +55,21 @@ const OrderHistoryPage = () => {
     }));
   };
 
-  const getStatusConfig = (status: Order['deliverStatus']) => {
-    return ORDER_STATUS_CONFIGS[status];
+  const getStatusConfig = (status: OrderInfo['deliverStatus']) => {
+    const label = getDeliveryStatusLabel(status);
+    const color = getDeliveryStatusColor(status);
+    return { text: label, color };
+  };
+
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method?.toUpperCase()) {
+      case 'CASH':
+        return 'Tiền mặt';
+      case 'ONLINE':
+        return 'Chuyển khoản';
+      default:
+        return method;
+    }
   };
 
   if (loading) {
@@ -126,38 +114,32 @@ const OrderHistoryPage = () => {
         <div className="space-y-6">
           {orders.map((order) => {
             const statusConfig = getStatusConfig(order.deliverStatus);
-
             return (
               <div
                 key={order._id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+                className={`rounded-lg shadow-md hover:shadow-lg transition-all p-6 ${statusConfig.color}`}
               >
                 <div className="flex flex-wrap justify-between items-center gap-4 mb-4 pb-4 border-b">
                   <div className="flex items-center gap-2">
                     <BsBox className="text-gray-600" />
                     <span className="text-gray-600">Mã đơn hàng:</span>
                     <span className="font-semibold text-gray-900">
-                      {order.orderNumber}
+                      {order._id}
                     </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <strong className="text-gray-700">
-                      {statusConfig.text}:
-                    </strong>
-                    {statusConfig.icon}
                   </div>
 
                   <div className="text-gray-600">
                     Ngày mua:{' '}
                     <span className="font-medium">
-                      {formatOrderDate(order.createdAt)}
+                      {order.createdAt
+                        ? formatOrderDate(order.createdAt)
+                        : 'N/A'}
                     </span>
                   </div>
                 </div>
 
                 <div className="mb-4 text-gray-700">
-                  {order.items.map((item, index) => (
+                  {order.items?.slice(0, 3).map((item, index: number) => (
                     <span key={index}>
                       {index > 0 && ', '}
                       <span className="font-medium">
@@ -165,40 +147,43 @@ const OrderHistoryPage = () => {
                       </span>
                     </span>
                   ))}
+                  {order.items && order.items.length > 3 && (
+                    <span className="font-medium text-gray-600"> ...</span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <span className="text-gray-600">Tổng tiền: </span>
                     <span className="text-[#ff5722] font-bold text-lg">
-                      {formatOrderPrice(order.totalAmount)}
+                      {formatOrderPrice(order.totalAmount || 0)}
                     </span>
                   </div>
 
                   <div>
                     <span className="text-gray-600">Phương thức: </span>
-                    <span className="font-semibold">{order.paymentMethod}</span>
+                    <span className="font-semibold">
+                      {getPaymentMethodLabel(order.paymentMethod)}
+                    </span>
                   </div>
 
                   <div>
-                    <span className="text-gray-600">Mã giao dịch: </span>
-                    <span className="font-medium">
-                      {order.orderToken || 'Không có thông tin'}
-                    </span>
+                    <span className="text-gray-600">Trạng thái: </span>
+                    <span className="font-medium">{statusConfig.text}</span>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => toggleDropdownContent(order._id)}
+                  onClick={() => toggleDropdownContent(order._id || '')}
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-2 transition-colors"
                 >
                   <i className="fas fa-eye" />
                   Xem tất cả sản phẩm
                 </button>
 
-                {expandedOrders[order._id] && (
+                {order._id && expandedOrders[order._id] && (
                   <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-2">
-                    {order.items.map((item, index) => (
+                    {order.items?.map((item, index: number) => (
                       <div
                         key={index}
                         className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0"
@@ -206,7 +191,7 @@ const OrderHistoryPage = () => {
                         <p className="text-gray-700">{item.productName}</p>
                         <p className="text-gray-600">x{item.quantity}</p>
                         <p className="text-[#ff5722] font-bold">
-                          {formatOrderPrice(item.price)}
+                          {formatOrderPrice(item.price || 0)}
                         </p>
                       </div>
                     ))}

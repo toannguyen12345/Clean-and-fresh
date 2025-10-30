@@ -1,46 +1,160 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { Button, RatingStars } from '@/components';
 import { QuantitySelector } from '@/components/QuantitySelector';
 import { getProductById } from '@/apis/product';
-import type { ProductInfo } from '@/apis/product';
+import axiosInstance from '@/lib/axios';
+import { getProductQuantityInCart, addProductToCart } from '@/utils/cart';
+import { getUserId } from '@/apis/user';
+import { isLoggedIn } from '@/utils/auth';
+import { USER_ROUTES } from '@/constants/routes';
+import type { Product } from '@/types/product';
 
 const DetailFood = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<ProductInfo | null>(null);
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (id) {
-        try {
-          setIsLoading(true);
-          const result = await getProductById(id);
-          if (result) {
-            setProduct(result);
+      try {
+        setIsLoading(true);
+        const response = await getProductById(id!);
+
+        if (response) {
+          const product =
+            response && typeof response === 'object' && 'success' in response
+              ? (response as Record<string, unknown>).data
+              : response;
+          if (product && typeof product === 'object' && '_id' in product) {
+            setProduct(product as Product);
           }
-        } catch (error) {
-          console.error('Fetch product error:', error);
-        } finally {
-          setIsLoading(false);
         }
+
+        // Fetch quantity từ BE cart
+        try {
+          const qty = await getProductQuantityInCart(id!);
+          setQuantity(qty);
+        } catch (cartError) {
+          setQuantity(0);
+        }
+      } catch (error) {
+        // Silent fail
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchProduct();
+    if (id) {
+      fetchProduct();
+    }
   }, [id]);
+  const handleIncrease = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
 
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
-  const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+    setQuantity((prev) => prev + 1);
 
-  const handleAddToCart = () => {};
+    try {
+      const userId = await getUserId();
+      if (!userId || !product) return;
 
-  const handleBuyNow = () => {};
+      await addProductToCart(
+        id!,
+        userId,
+        1,
+        product.productName,
+        product.ProductPrice,
+      );
+    } catch (error) {
+      // Silent fail
+    }
+  };
+
+  const handleDecrease = async () => {
+    if (quantity <= 1) return;
+
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+    try {
+      const userId = await getUserId();
+      if (!userId || !product) return;
+
+      await axiosInstance.post(`/API/cart/remove`, {
+        product: id!,
+        user: userId,
+        quantity: 1,
+        productName: product.productName,
+        price: product.ProductPrice,
+      });
+    } catch (error) {
+      // Silent fail
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
+
+    try {
+      if (!product || !id || quantity === 0) {
+        return;
+      }
+
+      const userId = await getUserId();
+      if (!userId) return;
+
+      await addProductToCart(
+        id,
+        userId,
+        quantity,
+        product.productName,
+        product.ProductPrice,
+      );
+      toast.success('Thêm vào giỏ hàng thành công');
+      setQuantity(0);
+    } catch (error) {
+      toast.error('Thêm vào giỏ hàng thất bại');
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để mua sản phẩm');
+      return;
+    }
+
+    try {
+      if (!product || !id) {
+        return;
+      }
+
+      const userId = await getUserId();
+      if (!userId) return;
+
+      await addProductToCart(
+        id,
+        userId,
+        1,
+        product.productName,
+        product.ProductPrice,
+      );
+      navigate(USER_ROUTES.US0004_CART);
+    } catch (error) {
+      toast.error('Có lỗi xảy ra');
+    }
+  };
 
   const handleGoBack = () => {
-    window.history.back();
+    navigate(-1);
   };
 
   if (isLoading) {

@@ -33,6 +33,22 @@ const Navbar = (): JSX.Element => {
     navigate('/');
   };
 
+  const handleMenuClick = () => {
+    setMenu('menu');
+    setTimeout(() => {
+      const element = document.getElementById('food-display');
+      element?.scrollIntoView({ behavior: 'smooth' });
+    }, 0);
+  };
+
+  const handleContactClick = () => {
+    setMenu('About');
+    setTimeout(() => {
+      const element = document.getElementById('footer');
+      element?.scrollIntoView({ behavior: 'smooth' });
+    }, 0);
+  };
+
   return (
     <>
       <div className="flex items-center justify-between px-[100px] py-5 bg-white pt-[5px]">
@@ -51,15 +67,16 @@ const Navbar = (): JSX.Element => {
             Trang chủ
           </Link>
 
-          <a
-            href="#food-display"
-            onClick={() => setMenu('menu')}
-            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
-              menu === 'menu' ? 'text-[#28a745] font-semibold' : ''
+          <button
+            onClick={handleMenuClick}
+            className={`cursor-pointer hover:text-[#28a745] transition-colors bg-transparent border-none p-0 text-[1.21rem] ${
+              menu === 'menu'
+                ? 'text-[#28a745] font-semibold'
+                : 'text-[#49557e]'
             }`}
           >
             Menu
-          </a>
+          </button>
 
           <Link
             to="/user/history"
@@ -71,25 +88,16 @@ const Navbar = (): JSX.Element => {
             Đơn mua
           </Link>
 
-          <Link
-            to={USER_ROUTES.US0005_PRODUCT_LIST}
-            onClick={() => setMenu('products')}
-            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
-              menu === 'products' ? 'text-[#28a745] font-semibold' : ''
-            }`}
-          >
-            Quản lý sản phẩm
-          </Link>
-
-          <a
-            href="#"
-            onClick={() => setMenu('About')}
-            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
-              menu === 'About' ? 'text-[#28a745] font-semibold' : ''
+          <button
+            onClick={handleContactClick}
+            className={`cursor-pointer hover:text-[#28a745] transition-colors bg-transparent border-none p-0 text-[1.21rem] ${
+              menu === 'About'
+                ? 'text-[#28a745] font-semibold'
+                : 'text-[#49557e]'
             }`}
           >
             Liên hệ
-          </a>
+          </button>
         </ul>
 
         <div className="flex items-center gap-[50px] cursor-pointer">

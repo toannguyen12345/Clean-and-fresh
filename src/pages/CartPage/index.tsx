@@ -1,52 +1,66 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { Button, Input } from '@/components';
+import {
+  listCart,
+  cleanCart,
+  cleanFullCart,
+  addCart,
+  removeCart,
+} from '@/apis/cart';
+import { getUserId } from '@/apis/user';
+import { applyDiscount } from '@/utils/discount';
+import { createOrder } from '@/apis/order';
+import { cartItemHelpers } from '@/utils/cart';
+import type { CartItem } from '@/types/cart';
 
-import CartItem from './components/CartItem';
-
-interface CartItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productPrice: number;
-  productImage: string;
-  quantity: number;
-  maxQuantity: number;
-}
-
-const mockCartItems: CartItem[] = [
-  {
-    id: '1',
-    productId: '1',
-    productName: 'Táo Fuji Nhật Bản',
-    productPrice: 150000,
-    productImage:
-      'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=800',
-    quantity: 2,
-    maxQuantity: 10,
-  },
-  {
-    id: '2',
-    productId: '2',
-    productName: 'Cam Sành Việt Nam',
-    productPrice: 45000,
-    productImage:
-      'https://images.unsplash.com/photo-1547514701-42782101795e?w=800',
-    quantity: 3,
-    maxQuantity: 20,
-  },
-];
+import CartItemComponent from './components/CartItem';
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(mockCartItems);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [_isLoading, setIsLoading] = useState(true);
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [discountError, setDiscountError] = useState('');
 
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        setIsLoading(true);
+
+        const userId = await getUserId();
+        if (!userId) {
+          setIsLoading(false);
+          return;
+        }
+
+        const cartResponse = await listCart(userId);
+
+        if (cartResponse.success && cartResponse.items) {
+          setCartItems(cartResponse.items as unknown as CartItem[]);
+        } else {
+          console.error(
+            '[CartPage] Failed to fetch cart:',
+            cartResponse.message,
+          );
+          toast.error(cartResponse.message || 'Lấy giỏ hàng thất bại');
+        }
+      } catch (error) {
+        console.error('Fetch cart error:', error);
+        toast.error('Có lỗi xảy ra khi lấy giỏ hàng');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCartItems();
+  }, []);
+
   const getTotalPrice = () => {
     return cartItems.reduce(
-      (total, item) => total + item.productPrice * item.quantity,
+      (total, item) => total + cartItemHelpers.getPrice(item) * item.quantity,
       0,
     );
   };
@@ -55,54 +69,179 @@ const CartPage = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const handleIncreaseQuantity = (itemId: string) => {
-    setCartItems((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId) {
-          if (item.quantity >= item.maxQuantity) {
-            alert(`Số lượng tối đa là ${item.maxQuantity}`);
-            return item;
-          }
-          return { ...item, quantity: item.quantity + 1 };
-        }
-        return item;
-      }),
-    );
+  const handleIncreaseQuantity = async (itemId: string) => {
+    try {
+      const item = cartItems.find((i) => i._id === itemId);
+      if (!item) return;
+
+      if (item.quantity >= cartItemHelpers.getMaxQuantity(item)) {
+        toast.error(
+          `Số lượng tối đa là ${cartItemHelpers.getMaxQuantity(item)}`,
+        );
+        return;
+      }
+
+      const userId = await getUserId();
+      if (!userId) return;
+
+      await addCart({
+        product: cartItemHelpers.getId(item),
+        user: userId,
+        quantity: 1,
+        productName: cartItemHelpers.getName(item),
+        price: cartItemHelpers.getPrice(item),
+      });
+
+      setCartItems((prev) =>
+        prev.map((i) =>
+          i._id === itemId ? { ...i, quantity: i.quantity + 1 } : i,
+        ),
+      );
+
+      // Reset discount khi thay đổi giỏ hàng
+      setDiscount(0);
+      setPromoCode('');
+    } catch (error) {
+      // Silent fail
+    }
   };
 
-  const handleDecreaseQuantity = (itemId: string) => {
-    setCartItems((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId && item.quantity > 1) {
-          return { ...item, quantity: item.quantity - 1 };
-        }
-        return item;
-      }),
-    );
+  const handleDecreaseQuantity = async (itemId: string) => {
+    try {
+      const item = cartItems.find((i) => i._id === itemId);
+      if (!item || item.quantity <= 1) return;
+
+      const userId = await getUserId();
+      if (!userId) return;
+
+      await removeCart({
+        product: cartItemHelpers.getId(item),
+        user: userId,
+        quantity: 1,
+        productName: cartItemHelpers.getName(item),
+        price: cartItemHelpers.getPrice(item),
+      });
+
+      setCartItems((prev) =>
+        prev.map((i) =>
+          i._id === itemId ? { ...i, quantity: i.quantity - 1 } : i,
+        ),
+      );
+
+      // Reset discount khi thay đổi giỏ hàng
+      setDiscount(0);
+      setPromoCode('');
+    } catch (error) {
+      // Silent fail
+    }
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+  const handleRemoveItem = async (itemId: string) => {
+    try {
+      const item = cartItems.find((i) => i._id === itemId);
+      if (!item) return;
+
+      setCartItems((prev) => prev.filter((i) => i._id !== itemId));
+
+      const userId = await getUserId();
+      if (!userId) return;
+
+      await cleanCart({
+        product: cartItemHelpers.getId(item),
+        user: userId,
+        quantity: item.quantity,
+      });
+
+      // Reset discount khi thay đổi giỏ hàng
+      setDiscount(0);
+      setPromoCode('');
+    } catch (error) {
+      // Silent fail
+    }
   };
 
-  const handleApplyDiscount = () => {
+  const handleApplyDiscount = async (code: string) => {
     setDiscountError('');
-    if (promoCode === 'DISCOUNT10') {
-      setDiscount(getTotalPrice() * 0.1);
-    } else if (promoCode === 'DISCOUNT20') {
-      setDiscount(getTotalPrice() * 0.2);
-    } else {
-      setDiscountError('Mã giảm giá không hợp lệ');
+    if (!code.trim()) {
+      setDiscountError('Vui lòng nhập mã giảm giá');
+      return;
+    }
+
+    try {
+      const result = await applyDiscount(promoCode, getTotalPrice());
+      if (result.discountAmount > 0) {
+        setDiscount(result.discountAmount);
+        setPromoCode('');
+      } else {
+        setDiscountError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
+        setDiscount(0);
+      }
+    } catch (error) {
+      console.error('[CartPage] Error applying discount:', error);
+      setDiscountError('Có lỗi xảy ra khi áp dụng mã giảm giá');
       setDiscount(0);
     }
   };
 
   const finalTotal = getTotalPrice() - discount;
 
-  const handleCheckout = (method: 'online' | 'cash') => {
-    alert(
-      `Thanh toán ${method === 'online' ? 'online' : 'tiền mặt'} thành công!`,
-    );
+  const handleCheckout = async (method: 'online' | 'cash') => {
+    try {
+      if (cartItems.length === 0) {
+        toast.error('Giỏ hàng trống');
+        return;
+      }
+
+      const userId = await getUserId();
+      if (!userId) {
+        toast.error('Vui lòng đăng nhập');
+        return;
+      }
+
+      const totalPrice = getTotalPrice();
+      const finalTotal = totalPrice - discount;
+
+      // Tính discount cho từng item (chia đều)
+      const discountRatio = totalPrice > 0 ? discount / totalPrice : 0;
+
+      const orderItems = cartItems.map((item) => {
+        const itemPrice = cartItemHelpers.getPrice(item);
+        const itemQuantity = item.quantity;
+        const itemGrossTotal = itemPrice * itemQuantity;
+        const itemDiscount = itemGrossTotal * discountRatio;
+        const itemNetTotal = itemGrossTotal - itemDiscount;
+
+        return {
+          productId: cartItemHelpers.getId(item),
+          quantity: itemQuantity,
+          productName: cartItemHelpers.getName(item),
+          price: itemPrice,
+          itemTotal: itemNetTotal,
+        };
+      });
+
+      const orderData = {
+        userId,
+        items: orderItems,
+        totalAmount: finalTotal,
+        paymentMethod: method === 'online' ? 'ONLINE' : 'CASH',
+      };
+
+      const response = await createOrder(orderData);
+
+      if (response.success) {
+        toast.success('Tạo đơn hàng thành công');
+
+        await cleanFullCart(userId);
+        setCartItems([]);
+        setDiscount(0);
+        setPromoCode('');
+      } else {
+        toast.error(response.message || 'Tạo đơn hàng thất bại');
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra');
+    }
   };
 
   return (
@@ -129,13 +268,13 @@ const CartPage = () => {
               </div>
 
               {cartItems.map((item) => (
-                <CartItem
-                  key={item.id}
+                <CartItemComponent
+                  key={item._id}
                   data={{
-                    id: item.id,
-                    productName: item.productName,
-                    productPrice: item.productPrice,
-                    productImage: item.productImage,
+                    id: item._id,
+                    productName: cartItemHelpers.getName(item),
+                    productPrice: cartItemHelpers.getPrice(item),
+                    productImage: cartItemHelpers.getImage(item),
                     quantity: item.quantity,
                   }}
                   onIncrease={handleIncreaseQuantity}
@@ -207,7 +346,10 @@ const CartPage = () => {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                   />
-                  <Button onClick={handleApplyDiscount} color="success">
+                  <Button
+                    onClick={() => handleApplyDiscount(promoCode)}
+                    color="success"
+                  >
                     Áp dụng
                   </Button>
                 </div>

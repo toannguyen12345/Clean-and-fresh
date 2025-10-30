@@ -13,8 +13,22 @@ import {
   isUserDataResponse,
 } from '@/utils/user';
 import { handleApiError } from '@/utils/api';
+import { hasAuthToken } from '@/utils/auth';
 
 export type { RoleInfo, UserInfo, CreateUserPayload, UpdateUserPayload };
+
+export const getUserId = async (): Promise<string | null> => {
+  if (!hasAuthToken()) return null;
+
+  try {
+    const response = (await axiosInstance.get('/API/user/me')) as {
+      user?: { _id: string };
+    };
+    return response?.user?._id || null;
+  } catch (error) {
+    return null;
+  }
+};
 
 type UserResponse = ApiResponse<UserInfo | UserInfo[]>;
 type ListUsersResponse = ListApiResponse<UserInfo[]>;

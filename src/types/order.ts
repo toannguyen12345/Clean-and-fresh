@@ -1,8 +1,36 @@
+import type { ApiResponse } from './api';
+
 export interface OrderItem {
-  productName: string;
+  productId: string;
   quantity: number;
-  price: number;
-  productId?: string;
+  productName?: string;
+  price?: number;
+  itemTotal?: number;
+}
+
+export interface OrderInfo {
+  _id?: string;
+  userId: string;
+  items: OrderItem[];
+  totalAmount: number;
+  paymentMethod: string;
+  deliverStatus?:
+    | 'pending'
+    | 'processing'
+    | 'shipped'
+    | 'delivered'
+    | 'cancelled';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type OrderResponse = ApiResponse<OrderInfo | OrderInfo[]>;
+
+export interface ListOrdersResponse {
+  success: boolean;
+  message: string;
+  orders?: OrderInfo[];
+  error?: Record<string, unknown>;
 }
 
 export interface Order {

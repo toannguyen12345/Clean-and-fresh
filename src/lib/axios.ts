@@ -28,11 +28,8 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       delete axiosInstance.defaults.headers.common['Authorization'];
-<<<<<<< HEAD
-=======
       // Redirect to home
       window.location.href = '/';
->>>>>>> cc6dea4 (final)
     }
     return Promise.reject(error.response?.data.errors);
   },

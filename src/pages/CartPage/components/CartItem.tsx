@@ -50,12 +50,12 @@ const CartItem = ({
           {(productPrice * quantity).toLocaleString('vi-VN')} ₫
         </p>
       </div>
-      <div className="col-span-1">
+      <div className="col-span-1 flex justify-center">
         <button
           onClick={() => onRemove(id)}
-          className="text-red-500 hover:text-red-700"
+          className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm font-medium transition"
         >
-          <i className="bx bx-x text-2xl" />
+          Xóa
         </button>
       </div>
     </div>
