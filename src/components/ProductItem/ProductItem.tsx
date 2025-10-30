@@ -22,7 +22,10 @@ const ProductItem = ({
   const [quantity, setQuantity] = useState(0);
 
   return (
-    <div className="w-full max-w-sm rounded-2xl shadow-md transition-transform duration-300 hover:scale-105 relative overflow-visible">
+    <div
+      className="w-full max-w-sm rounded-2xl shadow-md transition-transform duration-300 hover:scale-105 relative overflow-visible cursor-pointer"
+      onClick={() => onProductClick?.(data.id)}
+    >
       <div className="relative">
         <img
           src={data.image}
@@ -34,10 +37,7 @@ const ProductItem = ({
       <div className="p-5">
         <div className="mb-2.5">
           <div className="flex justify-between items-start gap-4 mb-2">
-            <h2
-              className="text-lg font-bold text-text-dark cursor-pointer flex-1"
-              onClick={() => onProductClick?.(data.id)}
-            >
+            <h2 className="text-lg font-bold text-text-dark flex-1">
               {data.name}
             </h2>
             <div className="flex-shrink-0">

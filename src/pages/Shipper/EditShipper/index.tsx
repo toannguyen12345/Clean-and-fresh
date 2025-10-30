@@ -2,13 +2,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import toast from 'react-hot-toast';
 
 import { Input, Button, FormField } from '@/components';
 import { editUserSchema, EditUserFormData } from '@/schemas/account';
 import { USER_ROUTES } from '@/constants/routes';
 import { formatDate } from '@/utils';
 import { FORMAT_DATE } from '@/constants';
+import { buildUserFormData } from '@/utils/user';
+import userService from '@/apis/user';
+
+interface ShipperWithImg {
+  IMG?: string;
+}
 
 const EditShipperPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +28,7 @@ const EditShipperPage = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<EditUserFormData>({
     resolver: zodResolver(editUserSchema),
     defaultValues: {
@@ -32,6 +38,33 @@ const EditShipperPage = () => {
       userAddress: '',
     },
   });
+
+  useEffect(() => {
+    const fetchShipper = async () => {
+      if (id) {
+        try {
+          const result = await userService.getUserById(id);
+          const shipper = result.data;
+
+          reset({
+            userName: shipper?.userName || '',
+            userBirthDay: shipper?.userBirthDay || '',
+            userEmail: shipper?.userEmail || '',
+            userAddress: shipper?.userAddress || '',
+          });
+
+          // BE trả về IMG field, không phải image
+          const shipperImg = (shipper as ShipperWithImg)?.IMG;
+          if (shipperImg) {
+            setImagePreview(shipperImg);
+          }
+        } catch (error) {
+          console.error('Fetch shipper error:', error);
+        }
+      }
+    };
+    fetchShipper();
+  }, [id, reset]);
 
   useEffect(() => {
     return () => {
@@ -58,14 +91,15 @@ const EditShipperPage = () => {
   const onSubmit = async (data: EditUserFormData) => {
     setIsSubmitting(true);
     try {
-      toast.success(
-        `Cập nhật shipper thành công!\nID: ${id}\nTên: ${data.userName}\nEmail: ${data.userEmail}`,
-      );
-      navigate(USER_ROUTES.US0016_SHIPPER_LIST);
+      if (id) {
+        const formData = buildUserFormData(data, _selectedFile || undefined);
+        await userService.updateUser(id, formData);
+      }
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi cập nhật shipper');
+      console.error('Update shipper error:', error);
     } finally {
       setIsSubmitting(false);
+      navigate(USER_ROUTES.US0016_SHIPPER_LIST);
     }
   };
 
@@ -84,11 +118,7 @@ const EditShipperPage = () => {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         <div className="lg:col-span-2 space-y-4">
-          <FormField
-            label="Họ và Tên"
-            isRequired
-            error={errors.userName?.message}
-          >
+          <FormField label="Họ và Tên" isRequired>
             <Input
               type="text"
               placeholder="Nhập họ và tên"
@@ -97,11 +127,7 @@ const EditShipperPage = () => {
             />
           </FormField>
 
-          <FormField
-            label="Ngày sinh"
-            isRequired
-            error={errors.userBirthDay?.message}
-          >
+          <FormField label="Ngày sinh" isRequired>
             <Input
               type="date"
               max={today}
@@ -110,7 +136,7 @@ const EditShipperPage = () => {
             />
           </FormField>
 
-          <FormField label="Email" isRequired error={errors.userEmail?.message}>
+          <FormField label="Email" isRequired>
             <Input
               type="email"
               placeholder="Nhập email"
@@ -119,11 +145,7 @@ const EditShipperPage = () => {
             />
           </FormField>
 
-          <FormField
-            label="Địa chỉ"
-            isRequired
-            error={errors.userAddress?.message}
-          >
+          <FormField label="Địa chỉ" isRequired>
             <Input
               type="text"
               placeholder="Nhập địa chỉ"
@@ -134,14 +156,6 @@ const EditShipperPage = () => {
 
           <div className="flex gap-4 pt-4">
             <Button
-              type="submit"
-              color="success"
-              className="flex-1"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật shipper'}
-            </Button>
-            <Button
               type="button"
               color="danger"
               className="flex-1"
@@ -149,6 +163,14 @@ const EditShipperPage = () => {
               disabled={isSubmitting}
             >
               Hủy
+            </Button>
+            <Button
+              type="submit"
+              color="success"
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật shipper'}
             </Button>
           </div>
         </div>

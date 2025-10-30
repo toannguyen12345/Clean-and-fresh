@@ -27,8 +27,7 @@ axiosInstance.interceptors.response.use(
     // Handle 401 - token expired
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
-      delete axiosInstance.defaults.headers.common['Authorization'];
-      // Redirect to home
+      delete axiosInstance.defaults.headers.common['Authorization']; // Redirect to home
       window.location.href = '/';
     }
     return Promise.reject(error.response?.data.errors);

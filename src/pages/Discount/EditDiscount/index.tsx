@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 
 import { DiscountFormData } from '@/schemas/discount';
 import { USER_ROUTES } from '@/constants/routes';
@@ -40,10 +39,7 @@ const EditDiscountPage = () => {
     fetchDiscount();
   }, [id]);
 
-  const handleSubmit = (data: DiscountFormData) => {
-    toast.success(
-      `Cập nhật mã giảm giá thành công!\nMã: ${data.discountCode}\nGiảm: ${data.discountValue}${data.discountType === 'percent' ? '%' : ' VNĐ'}`,
-    );
+  const handleSubmit = () => {
     navigate(USER_ROUTES.US0008_DISCOUNT_LIST);
   };
 

@@ -1,5 +1,3 @@
-import { AxiosError } from 'axios';
-
 import axiosInstance from '@/lib/axios';
 import type { RoleInfo } from '@/types/common';
 import type {
@@ -8,49 +6,29 @@ import type {
   UpdateUserPayload,
 } from '@/types/user';
 import type { ApiResponse, ListApiResponse } from '@/types/api';
-import { buildUserFormData } from '@/utils/userHelpers';
+import {
+  buildUserFormData,
+  isUserInfo,
+  isUserResponse,
+  isUsersArrayResponse,
+  isUserDataResponse,
+} from '@/utils/user';
+import { handleApiError } from '@/utils/api';
 
 export type { RoleInfo, UserInfo, CreateUserPayload, UpdateUserPayload };
 
-type UserResponse = ApiResponse<UserInfo | UserInfo[]>;
+type UserResponse = ApiResponse<UserInfo>;
 type ListUsersResponse = ListApiResponse<UserInfo[]>;
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-const USER_ENDPOINT = `${API_BASE_URL}/API/user`;
-
-const handleApiError = (
-  error: unknown,
-  defaultMessage: string,
-): { message: string; error?: Record<string, unknown> } => {
-  if (error instanceof AxiosError) {
-    const data = error.response?.data;
-    let message = defaultMessage;
-
-    if (data && typeof data === 'object' && 'message' in data) {
-      const msg = data.message;
-      if (typeof msg === 'string') {
-        message = msg;
-      }
-    }
-
-    return {
-      message,
-      error: typeof data === 'object' ? data : undefined,
-    };
-  }
-  return {
-    message: defaultMessage,
-    error: undefined,
-  };
-};
 
 const listUsers = async (): Promise<ListUsersResponse> => {
   try {
-    const response = await axiosInstance.get(`${USER_ENDPOINT}/list`);
+    const response = await axiosInstance.get('/API/user/list');
+    const users = isUsersArrayResponse(response) ? response.users : [];
+
     return {
       success: true,
       message: 'Lấy danh sách users thành công',
-      users: response.data.users || [],
+      users,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Lấy danh sách users thất bại');
@@ -63,13 +41,12 @@ const listUsers = async (): Promise<ListUsersResponse> => {
 
 const getUserById = async (userId: string): Promise<UserResponse> => {
   try {
-    const response = await axiosInstance.get(
-      `${USER_ENDPOINT}/findByID/${userId}`,
-    );
+    const response = await axiosInstance.get(`/API/user/findByID/${userId}`);
+    const user = isUserResponse(response) ? response.user : undefined;
     return {
       success: true,
       message: 'Lấy thông tin user thành công',
-      data: response.data.user,
+      data: user,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Lấy thông tin user thất bại');
@@ -83,12 +60,13 @@ const getUserById = async (userId: string): Promise<UserResponse> => {
 const searchUserByName = async (name: string): Promise<ListUsersResponse> => {
   try {
     const response = await axiosInstance.get(
-      `${USER_ENDPOINT}/findByName/${encodeURIComponent(name)}`,
+      `/API/user/findByName/${encodeURIComponent(name)}`,
     );
+    const users = isUserDataResponse(response) ? response.data.users || [] : [];
     return {
       success: true,
       message: `Tìm users với tên "${name}" thành công`,
-      users: response.data.users || [],
+      users,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Tìm user thất bại');
@@ -105,21 +83,16 @@ const createUser = async (
 ): Promise<UserResponse> => {
   try {
     const formData = buildUserFormData(userData, imageFile);
-
-    const response = await axiosInstance.post(
-      `${USER_ENDPOINT}/create`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+    const response = await axiosInstance.post('/API/user/create', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
       },
-    );
-
+    });
+    const user = isUserDataResponse(response) ? response.data.user : undefined;
     return {
       success: true,
       message: 'Tạo user thành công',
-      data: response.data.user,
+      data: user,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Tạo user thất bại');
@@ -136,7 +109,7 @@ const updateUser = async (
 ): Promise<UserResponse> => {
   try {
     const response = await axiosInstance.put(
-      `${USER_ENDPOINT}/updateByID/${userId}`,
+      `/API/user/updateByID/${userId}`,
       formData,
       {
         headers: {
@@ -144,11 +117,11 @@ const updateUser = async (
         },
       },
     );
-
+    const user = isUserDataResponse(response) ? response.data.user : undefined;
     return {
       success: true,
       message: 'Cập nhật user thành công',
-      data: response.data.user,
+      data: user,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Cập nhật user thất bại');
@@ -161,12 +134,10 @@ const updateUser = async (
 
 const deleteUser = async (userId: string): Promise<UserResponse> => {
   try {
-    const response = await axiosInstance.delete(
-      `${USER_ENDPOINT}/delete/${userId}`,
-    );
+    await axiosInstance.delete(`/API/user/delete/${userId}`);
     return {
       success: true,
-      message: response.data.message || 'Xóa user thành công',
+      message: 'Xóa user thành công',
       data: undefined,
     };
   } catch (error) {
@@ -180,12 +151,24 @@ const deleteUser = async (userId: string): Promise<UserResponse> => {
 
 const getMe = async (): Promise<UserResponse> => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = (await axiosInstance.get(`${USER_ENDPOINT}/me`)) as any;
+    const response = await axiosInstance.get('/API/user/me');
+
+    if (response && typeof response === 'object') {
+      const userData = 'user' in response ? response.user : response;
+
+      if (userData && isUserInfo(userData)) {
+        return {
+          success: true,
+          message: 'Lấy thông tin user hiện tại thành công',
+          data: userData,
+        };
+      }
+    }
+
     return {
       success: true,
       message: 'Lấy thông tin user hiện tại thành công',
-      data: response.user || response.data?.user,
+      data: undefined,
     };
   } catch (error) {
     const errorData = handleApiError(error, 'Lấy thông tin user thất bại');

@@ -1,21 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { Button, RatingStars } from '@/components';
 import { QuantitySelector } from '@/components/QuantitySelector';
-
-const mockProduct = {
-  id: '1',
-  name: 'Táo Fuji Nhật Bản',
-  description:
-    'Táo Fuji nhập khẩu trực tiếp từ Nhật Bản, giòn ngọt, giàu dinh dưỡng. Sản phẩm được trồng theo tiêu chuẩn hữu cơ, không sử dụng hóa chất độc hại.',
-  price: 150000,
-  image: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=800',
-  rating: 5,
-  reviewCount: 5,
-};
+import { getProductById } from '@/apis/product';
+import type { Product } from '@/types/product';
 
 const DetailFood = (): JSX.Element => {
+  const { id } = useParams<{ id: string }>();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (id) {
+        try {
+          setIsLoading(true);
+          const result = await getProductById(id);
+          if (result) {
+            setProduct(result);
+          }
+        } catch (error) {
+          console.error('Fetch product error:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   const handleIncrease = () => setQuantity((prev) => prev + 1);
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
@@ -28,35 +43,49 @@ const DetailFood = (): JSX.Element => {
     window.history.back();
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#28a745]" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-red-500">Không tìm thấy sản phẩm</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-lg shadow-md">
-        <div className="flex items-center justify-center">
+        <div className="flex items-start justify-start pr-4">
           <img
-            src={mockProduct.image}
-            alt={mockProduct.name}
-            className="w-full h-4/5 rounded-lg object-cover"
+            src={product.IMG || product.image || ''}
+            alt={product.productName}
+            className="w-full h-[500px] rounded-lg object-cover"
           />
         </div>
 
-        <div className="flex flex-col gap-6 py-8">
+        <div className="flex flex-col gap-6 py-0">
           <h1 className="text-3xl font-bold text-gray-900">
-            {mockProduct.name}
+            {product.productName}
           </h1>
 
           <div className="flex items-center gap-2">
             <RatingStars />
-            <span className="text-sm text-gray-600">
-              {mockProduct.reviewCount} Customer Review
-            </span>
+            <span className="text-sm text-gray-600">0 Customer Review</span>
           </div>
 
           <p className="text-gray-700 leading-relaxed">
-            {mockProduct.description}
+            {product.productDescription}
           </p>
 
           <div className="text-3xl font-bold text-primary">
-            {mockProduct.price.toLocaleString('vi-VN')} VND
+            {product.ProductPrice.toLocaleString('vi-VN')} VND
           </div>
 
           <div className="flex flex-col gap-4">

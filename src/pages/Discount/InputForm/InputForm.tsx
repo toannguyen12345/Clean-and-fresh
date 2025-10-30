@@ -1,8 +1,9 @@
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm, useFormState, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Input, Button, FormField } from '@/components';
+import { Input, Button, FormField, Select } from '@/components';
 import { discountSchema, DiscountFormData } from '@/schemas/discount';
+import { DISCOUNT_TYPE_OPTIONS } from '@/constants/discount';
 
 interface InputFormProps {
   mode: 'add' | 'edit';
@@ -33,6 +34,12 @@ const InputForm = ({
 
   const { errors } = useFormState({ control });
 
+  const getErrorMessage = (
+    fieldName: keyof DiscountFormData,
+  ): string | undefined => {
+    return errors[fieldName]?.message;
+  };
+
   const handleFormSubmit = (data: DiscountFormData) => {
     onSubmit(data);
   };
@@ -48,65 +55,68 @@ const InputForm = ({
         className="grid grid-cols-1 lg:grid-cols-2 gap-6"
       >
         <div className="space-y-6">
-          <FormField
-            label="Tên Giảm Giá"
-            isRequired
-            error={errors.discountName?.message}
-          >
-            <Input {...register('discountName')} placeholder="Tên Giảm Giá" />
-          </FormField>
-
-          <FormField
-            label="Mã Giảm Giá"
-            isRequired
-            error={errors.discountCode?.message}
-          >
-            <Input {...register('discountCode')} placeholder="Mã Giảm Giá" />
-          </FormField>
-
-          <FormField
-            label="Kiểu Giảm Giá"
-            isRequired
-            error={errors.discountType?.message}
-          >
-            <select
-              {...register('discountType')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#28a745]"
-            >
-              <option value="">Chọn kiểu giảm giá</option>
-              <option value="fixed">Cố định</option>
-              <option value="percent">Phần trăm</option>
-            </select>
-          </FormField>
-
-          <FormField
-            label="Giá Trị Giảm"
-            isRequired
-            error={errors.discountValue?.message}
-          >
+          <FormField label="Tên Giảm Giá" isRequired>
             <Input
-              type="number"
-              {...register('discountValue', { valueAsNumber: true })}
-              placeholder="Giá Trị Giảm"
+              {...register('discountName')}
+              placeholder="Tên Giảm Giá"
+              error={getErrorMessage('discountName')}
             />
+          </FormField>
+
+          <FormField label="Mã Giảm Giá" isRequired>
+            <Input
+              {...register('discountCode')}
+              placeholder="Mã Giảm Giá"
+              error={getErrorMessage('discountCode')}
+            />
+          </FormField>
+
+          <FormField label="Kiểu Giảm Giá" isRequired>
+            <Controller
+              name="discountType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  options={DISCOUNT_TYPE_OPTIONS}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Chọn kiểu giảm giá"
+                  className="bg-white border-gray-300"
+                />
+              )}
+            />
+            {getErrorMessage('discountType') && (
+              <p className="text-red-500 text-sm mt-1">
+                {getErrorMessage('discountType')}
+              </p>
+            )}
           </FormField>
         </div>
 
         <div className="space-y-6">
-          <FormField
-            label="Ngày Bắt Đầu"
-            isRequired
-            error={errors.startDate?.message}
-          >
-            <Input type="date" {...register('startDate')} />
+          <FormField label="Ngày Bắt Đầu" isRequired>
+            <Input
+              type="date"
+              {...register('startDate')}
+              error={getErrorMessage('startDate')}
+            />
           </FormField>
 
-          <FormField
-            label="Ngày Hết Hạn"
-            isRequired
-            error={errors.expiryDate?.message}
-          >
-            <Input type="date" {...register('expiryDate')} />
+          <FormField label="Ngày Hết Hạn" isRequired>
+            <Input
+              type="date"
+              {...register('expiryDate')}
+              error={getErrorMessage('expiryDate')}
+            />
+          </FormField>
+
+          <FormField label="Giá Trị Giảm" isRequired>
+            <Input
+              type="number"
+              {...register('discountValue', { valueAsNumber: true })}
+              placeholder="Giá Trị Giảm"
+              error={getErrorMessage('discountValue')}
+            />
           </FormField>
         </div>
 
@@ -114,7 +124,7 @@ const InputForm = ({
           <Button
             type="button"
             onClick={onCancel}
-            color="secondary"
+            color="danger"
             disabled={isLoading}
           >
             Hủy

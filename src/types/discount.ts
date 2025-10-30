@@ -1,6 +1,8 @@
+export type DiscountType = 'fixed' | 'percent';
+
 export interface Discount {
   _id: string;
-  discountType: string;
+  discountType: DiscountType;
   discountName: string;
   discountCode: string;
   discountValue: number;

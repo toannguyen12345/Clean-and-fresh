@@ -1,59 +1,51 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { DataTable, Button } from '@/components';
+import { DataTable, Button, Loading } from '@/components';
 import { Product } from '@/types/product';
 import { USER_ROUTES } from '@/constants/routes';
-
-const mockProducts: Product[] = [
-  {
-    _id: '1',
-    productName: 'Táo Fuji Nhật Bản',
-    ProductPrice: 150000,
-    ProductQuantity: 10,
-    category: '66f3b0ba7eb7ffbdd806be66',
-    IMG: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=200',
-    userId: '123',
-  },
-  {
-    _id: '2',
-    productName: 'Cam Sành Việt Nam',
-    ProductPrice: 45000,
-    ProductQuantity: 0,
-    category: '66f3b0ba7eb7ffbdd806be67',
-    IMG: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=200',
-    userId: '123',
-  },
-  {
-    _id: '3',
-    productName: 'Nho Mỹ Không Hạt',
-    ProductPrice: 120000,
-    ProductQuantity: 15,
-    category: '66f3b0ba7eb7ffbdd806be67',
-    IMG: 'https://images.unsplash.com/photo-1599819177626-c0d3b8c2c8d8?w=200',
-    userId: '123',
-  },
-  {
-    _id: '4',
-    productName: 'Dưa Hấu Không Hạt',
-    ProductPrice: 35000,
-    ProductQuantity: 8,
-    category: '66f3b0ba7eb7ffbdd806be67',
-    IMG: 'https://images.unsplash.com/photo-1587049352846-4a222e784acc?w=200',
-    userId: '123',
-  },
-];
+import { listProducts, deleteProduct } from '@/apis/product';
 
 const ProductTablePage = () => {
   const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const result = await listProducts();
+      setProducts(result.data || []);
+    } catch (error) {
+      console.error('Fetch products error:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Có lỗi xảy ra khi lấy danh sách sản phẩm';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleAddProduct = () => {
     navigate(USER_ROUTES.US0006_ADD_PRODUCT);
   };
 
-  const handleDeleteProduct = (id: string) => {
-    toast.success(`Xóa sản phẩm ID: ${id} thành công!`);
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      await deleteProduct(id);
+      toast.success('Xóa sản phẩm thành công!');
+      fetchProducts();
+    } catch (error) {
+      toast.error('Xóa sản phẩm thất bại');
+    }
   };
 
   const handleUpdateProduct = (id: string) => {
@@ -68,7 +60,11 @@ const ProductTablePage = () => {
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
             <img
-              src={row.original.IMG || 'https://via.placeholder.com/50'}
+              src={
+                row.original.image ||
+                row.original.IMG ||
+                'https://via.placeholder.com/50'
+              }
               alt={row.original.productName}
               className="w-full h-full object-cover"
             />
@@ -143,6 +139,14 @@ const ProductTablePage = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -152,7 +156,7 @@ const ProductTablePage = () => {
         </Button>
       </div>
       <DataTable
-        data={mockProducts}
+        data={products}
         columns={columns}
         searchPlaceholder="Tìm kiếm theo tên sản phẩm..."
         searchColumn="productName"

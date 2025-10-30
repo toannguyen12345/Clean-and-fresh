@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Input, Button, Textarea, FormField } from '@/components';
 import { productSchema, ProductFormData } from '@/schemas/product';
+import { PRODUCT_CATEGORIES } from '@/utils/product';
 
 interface InputFormProps {
   mode: 'add' | 'edit';
@@ -13,13 +14,12 @@ interface InputFormProps {
   isLoading?: boolean;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: 'Leafy', label: 'Rau lá xanh' },
-  { value: 'Root', label: 'Rau củ rễ' },
-  { value: 'Cruciferous', label: 'Rau họ cải' },
-  { value: 'Fruiting', label: 'Rau quả' },
-  { value: 'Herbs', label: 'Rau thơm' },
-];
+const CATEGORY_OPTIONS = Object.entries(PRODUCT_CATEGORIES).map(
+  ([value, label]) => ({
+    value,
+    label,
+  }),
+);
 
 const InputForm = ({
   mode,
@@ -35,6 +35,7 @@ const InputForm = ({
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -47,10 +48,19 @@ const InputForm = ({
   });
 
   useEffect(() => {
-    if (initialData?.image) {
-      setImagePreview(initialData.image as string);
+    if (initialData) {
+      reset({
+        productName: initialData.productName || '',
+        productDescription: initialData.productDescription || '',
+        productPrice: initialData.productPrice || 0,
+        productQuantity: initialData.productQuantity || 0,
+        category: initialData.category || 'Leafy',
+      });
+      if (initialData.image) {
+        setImagePreview(initialData.image as string);
+      }
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
   useEffect(() => {
     return () => {
@@ -91,76 +101,70 @@ const InputForm = ({
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         <div className="lg:col-span-2 space-y-4">
-          <FormField
-            label="Tên sản phẩm"
-            isRequired
-            error={errors.productName?.message}
-          >
+          <FormField label="Tên sản phẩm" isRequired>
             <Input
               type="text"
               placeholder="Nhập tên sản phẩm"
               {...register('productName')}
+              error={errors.productName?.message}
             />
           </FormField>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Loại sản phẩm"
-              isRequired
-              error={errors.category?.message}
-            >
+            <FormField label="Loại sản phẩm" isRequired>
               <select
                 {...register('category')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 {CATEGORY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.label as string}
                   </option>
                 ))}
               </select>
             </FormField>
 
-            <FormField
-              label="Số lượng"
-              isRequired
-              error={errors.productQuantity?.message}
-            >
+            <FormField label="Số lượng" isRequired>
               <Input
                 type="number"
                 min="1"
                 placeholder="Nhập số lượng"
                 {...register('productQuantity', { valueAsNumber: true })}
+                error={errors.productQuantity?.message}
               />
             </FormField>
           </div>
 
-          <FormField
-            label="Giá bán ra (VNĐ)"
-            isRequired
-            error={errors.productPrice?.message}
-          >
+          <FormField label="Giá bán ra (VNĐ)" isRequired>
             <Input
               type="number"
               min="0"
               placeholder="Nhập giá bán ra"
               {...register('productPrice', { valueAsNumber: true })}
+              error={errors.productPrice?.message}
             />
           </FormField>
 
-          <FormField
-            label="Mô tả"
-            isRequired
-            error={errors.productDescription?.message}
-          >
+          <FormField label="Mô tả" isRequired>
             <Textarea
               rows={4}
               placeholder="Nhập mô tả sản phẩm"
               {...register('productDescription')}
+              error={errors.productDescription?.message}
             />
           </FormField>
 
           <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              color="danger"
+              size="lg"
+              onClick={onCancel}
+              disabled={isLoading}
+              className="flex-1"
+            >
+              Hủy
+            </Button>
             <Button
               type="submit"
               color="success"
@@ -173,16 +177,6 @@ const InputForm = ({
                 : mode === 'add'
                   ? 'Thêm sản phẩm'
                   : 'Cập nhật sản phẩm'}
-            </Button>
-            <Button
-              type="button"
-              color="secondary"
-              size="lg"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="flex-1"
-            >
-              Hủy
             </Button>
           </div>
         </div>
