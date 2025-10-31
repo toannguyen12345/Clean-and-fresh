@@ -34,6 +34,12 @@ const InputForm = ({
 
   const { errors } = useFormState({ control });
 
+  const getErrorMessage = (
+    fieldName: keyof DiscountFormData,
+  ): string | undefined => {
+    return errors[fieldName]?.message;
+  };
+
   const handleFormSubmit = (data: DiscountFormData) => {
     onSubmit(data);
   };
@@ -53,7 +59,7 @@ const InputForm = ({
             <Input
               {...register('discountName')}
               placeholder="Tên Giảm Giá"
-              error={errors.discountName?.message}
+              error={getErrorMessage('discountName')}
             />
           </FormField>
 
@@ -61,7 +67,7 @@ const InputForm = ({
             <Input
               {...register('discountCode')}
               placeholder="Mã Giảm Giá"
-              error={errors.discountCode?.message}
+              error={getErrorMessage('discountCode')}
             />
           </FormField>
 
@@ -92,7 +98,7 @@ const InputForm = ({
             <Input
               type="date"
               {...register('startDate')}
-              error={errors.startDate?.message}
+              error={getErrorMessage('startDate')}
             />
           </FormField>
 
@@ -100,7 +106,7 @@ const InputForm = ({
             <Input
               type="date"
               {...register('expiryDate')}
-              error={errors.expiryDate?.message}
+              error={getErrorMessage('expiryDate')}
             />
           </FormField>
 
@@ -109,7 +115,7 @@ const InputForm = ({
               type="number"
               {...register('discountValue', { valueAsNumber: true })}
               placeholder="Giá Trị Giảm"
-              error={errors.discountValue?.message}
+              error={getErrorMessage('discountValue')}
             />
           </FormField>
         </div>

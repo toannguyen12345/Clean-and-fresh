@@ -2,31 +2,26 @@ import { axiosInstance } from '@/lib';
 import type { ApiResponse } from '@/types/api';
 import type { Discount } from '@/types/discount';
 import { handleApiError } from '@/utils/api';
-import { isDiscountResponse, isDiscountArrayResponse } from '@/utils/discount';
+import { isDiscountArrayResponse } from '@/utils/discount';
 
 export type { Discount as DiscountInfo };
-
 type DiscountListResponse = ApiResponse<Discount[]>;
 
 const listDiscounts = async (): Promise<DiscountListResponse> => {
   try {
     const response = await axiosInstance.get('/API/discount/list');
 
-    if (response && typeof response === 'object' && 'discounts' in response) {
-      const discounts = response.discounts;
-      if (Array.isArray(discounts)) {
-        return {
-          success: true,
-          message: 'Lấy danh sách mã giảm giá thành công',
-          data: discounts,
-        };
-      }
+    // Handle both formats: array directly or object with discounts key
+    let discounts: Discount[] = [];
+    if (Array.isArray(response)) {
+      discounts = response;
+    } else if (isDiscountArrayResponse(response)) {
+      discounts = response.discounts;
     }
-
     return {
       success: true,
       message: 'Lấy danh sách mã giảm giá thành công',
-      data: [],
+      data: discounts,
     };
   } catch (error: unknown) {
     console.error('[discountApi] Error listing discounts:', error);
@@ -38,7 +33,7 @@ const getDiscountById = async (
   discountId: string,
 ): Promise<Discount | null> => {
   try {
-    const response = await axiosInstance.get(
+    const response = (await axiosInstance.get(
       `/API/discount/findByID/${discountId}`,
     );
     return isDiscountResponse(response) ? response.discount : null;
@@ -76,7 +71,7 @@ const createDiscount = async (
   discountData: Partial<Discount>,
 ): Promise<Discount | null> => {
   try {
-    const response = await axiosInstance.post(
+    const response = (await axiosInstance.post(
       `/API/discount/create`,
       discountData,
     );
@@ -92,7 +87,7 @@ const updateDiscount = async (
   discountData: Partial<Discount>,
 ): Promise<Discount | null> => {
   try {
-    const response = await axiosInstance.put(
+    const response = (await axiosInstance.put(
       `/API/discount/updateByID/${discountId}`,
       discountData,
     );

@@ -9,6 +9,7 @@ export interface UserInfo {
   userBirthDay?: string;
   userAddress?: string;
   image?: string;
+  IMG?: string;
   accountId?: string;
   roles?: Array<{ roleName: string; roleCode: number }>;
   createdAt?: string;
@@ -18,17 +19,21 @@ export interface UserInfo {
 // Alias cho compatibility
 export type User = UserInfo;
 
-export interface UserPayload {
+export interface CreateUserPayload {
+  userName: string;
+  userEmail: string;
+  userBirthDay?: string;
+  userAddress?: string;
+  IMG?: string;
+}
+
+export interface UpdateUserPayload {
   userName?: string;
   userEmail?: string;
   userBirthDay?: string;
   userAddress?: string;
-  image?: string;
+  IMG?: string;
 }
-
-// Alias cho backward compatibility
-export type CreateUserPayload = UserPayload;
-export type UpdateUserPayload = UserPayload;
 
 export interface UserData {
   account: string;
@@ -39,7 +44,22 @@ export interface UserData {
   phone?: string;
   address?: string;
   country?: string;
-  image?: string;
+  IMG?: string;
+}
+
+export interface UserResponse {
+  user?: UserInfo;
+}
+
+export interface UsersArrayResponse {
+  users: UserInfo[];
+}
+
+export interface UserDataResponse {
+  data: {
+    user?: UserInfo;
+    users?: UserInfo[];
+  };
 }
 
 export interface UserResponse {

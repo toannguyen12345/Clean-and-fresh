@@ -17,14 +17,14 @@ const ProductTablePage = () => {
     try {
       setLoading(true);
       const result = await listProducts();
-      if (result.success && result.data) {
-        setProducts(result.data);
-      } else {
-        toast.error('Lấy danh sách sản phẩm thất bại');
-      }
+      setProducts(result.data || []);
     } catch (error) {
       console.error('Fetch products error:', error);
-      toast.error('Có lỗi xảy ra khi lấy danh sách sản phẩm');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Có lỗi xảy ra khi lấy danh sách sản phẩm';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
