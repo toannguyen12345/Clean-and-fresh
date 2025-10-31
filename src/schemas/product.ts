@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
 export const productSchema = z.object({
-  productName: z.string().min(1, 'Tên sản phẩm không được để trống'),
+  productName: z
+    .string()
+    .min(1, 'Tên sản phẩm không được để trống')
+    .regex(
+      /^[\p{L}\p{N}\s]+$/u,
+      'Tên sản phẩm chỉ được chứa chữ, số và khoảng trắng',
+    ),
   productDescription: z.string().min(1, 'Mô tả không được để trống'),
   productPrice: z
     .number({ invalid_type_error: 'Giá phải là số' })

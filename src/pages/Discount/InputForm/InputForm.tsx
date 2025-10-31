@@ -34,12 +34,6 @@ const InputForm = ({
 
   const { errors } = useFormState({ control });
 
-  const getErrorMessage = (
-    fieldName: keyof DiscountFormData,
-  ): string | undefined => {
-    return errors[fieldName]?.message;
-  };
-
   const handleFormSubmit = (data: DiscountFormData) => {
     onSubmit(data);
   };
@@ -59,7 +53,7 @@ const InputForm = ({
             <Input
               {...register('discountName')}
               placeholder="Tên Giảm Giá"
-              error={getErrorMessage('discountName')}
+              error={errors.discountName?.message}
             />
           </FormField>
 
@@ -67,7 +61,7 @@ const InputForm = ({
             <Input
               {...register('discountCode')}
               placeholder="Mã Giảm Giá"
-              error={getErrorMessage('discountCode')}
+              error={errors.discountCode?.message}
             />
           </FormField>
 
@@ -85,9 +79,9 @@ const InputForm = ({
                 />
               )}
             />
-            {getErrorMessage('discountType') && (
+            {errors.discountType?.message && (
               <p className="text-red-500 text-sm mt-1">
-                {getErrorMessage('discountType')}
+                {errors.discountType?.message}
               </p>
             )}
           </FormField>
@@ -98,7 +92,7 @@ const InputForm = ({
             <Input
               type="date"
               {...register('startDate')}
-              error={getErrorMessage('startDate')}
+              error={errors.startDate?.message}
             />
           </FormField>
 
@@ -106,7 +100,7 @@ const InputForm = ({
             <Input
               type="date"
               {...register('expiryDate')}
-              error={getErrorMessage('expiryDate')}
+              error={errors.expiryDate?.message}
             />
           </FormField>
 
@@ -115,7 +109,7 @@ const InputForm = ({
               type="number"
               {...register('discountValue', { valueAsNumber: true })}
               placeholder="Giá Trị Giảm"
-              error={getErrorMessage('discountValue')}
+              error={errors.discountValue?.message}
             />
           </FormField>
         </div>

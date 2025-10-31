@@ -50,8 +50,8 @@ const AdminDashboard = ({
           weeklySales: orderStats.weeklySales,
           yearlySales: orderStats.yearlySales,
         });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+      } catch (error: unknown) {
+        console.error('[AdminDashboard] Error fetching dashboard data:', error);
       }
     };
 

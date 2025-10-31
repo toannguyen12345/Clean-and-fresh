@@ -25,7 +25,8 @@ export const getUserId = async (): Promise<string | null> => {
       user?: { _id: string };
     };
     return response?.user?._id || null;
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('[userApi] Error getting user ID:', error);
     return null;
   }
 };
@@ -53,7 +54,7 @@ const listUsers = async (): Promise<ListUsersResponse> => {
       message: 'Lấy danh sách users thành công',
       users: [],
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Lấy danh sách users thất bại');
     return {
       success: false,
@@ -71,7 +72,7 @@ const getUserById = async (userId: string): Promise<UserResponse> => {
       message: 'Lấy thông tin user thành công',
       data: user,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Lấy thông tin user thất bại');
     return {
       success: false,
@@ -91,7 +92,7 @@ const searchUserByName = async (name: string): Promise<ListUsersResponse> => {
       message: `Tìm users với tên "${name}" thành công`,
       users,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Tìm user thất bại');
     return {
       success: false,
@@ -117,7 +118,7 @@ const createUser = async (
       message: 'Tạo user thành công',
       data: user,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Tạo user thất bại');
     return {
       success: false,
@@ -146,7 +147,7 @@ const updateUser = async (
       message: 'Cập nhật user thành công',
       data: user,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Cập nhật user thất bại');
     return {
       success: false,
@@ -163,7 +164,7 @@ const deleteUser = async (userId: string): Promise<UserResponse> => {
       message: 'Xóa user thành công',
       data: undefined,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Xóa user thất bại');
     return {
       success: false,
@@ -193,7 +194,7 @@ const getMe = async (): Promise<UserResponse> => {
       message: 'Lấy thông tin user hiện tại thành công',
       data: undefined,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Lấy thông tin user thất bại');
     return {
       success: false,

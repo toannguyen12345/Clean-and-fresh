@@ -28,7 +28,8 @@ const listDiscounts = async (): Promise<DiscountListResponse> => {
       message: 'Lấy danh sách mã giảm giá thành công',
       data: [],
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('[discountApi] Error listing discounts:', error);
     return Promise.reject(error);
   }
 };
@@ -41,7 +42,7 @@ const getDiscountById = async (
       `/API/discount/findByID/${discountId}`,
     );
     return isDiscountResponse(response) ? response.discount : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Lấy mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -53,7 +54,7 @@ const searchDiscountByName = async (name: string): Promise<Discount[]> => {
       `/API/discount/findByName/${encodeURIComponent(name)}`,
     );
     return isDiscountArrayResponse(response) ? response.foundDiscounts : [];
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Tìm mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -65,7 +66,7 @@ const searchDiscountByCode = async (code: string): Promise<Discount[]> => {
       `/API/discount/findByCode/${encodeURIComponent(code)}`,
     );
     return isDiscountArrayResponse(response) ? response.foundDiscounts : [];
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Tìm mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -80,7 +81,7 @@ const createDiscount = async (
       discountData,
     );
     return isDiscountResponse(response) ? response.discount : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Tạo mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -96,7 +97,7 @@ const updateDiscount = async (
       discountData,
     );
     return isDiscountResponse(response) ? response.discount : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Cập nhật mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -104,7 +105,7 @@ const updateDiscount = async (
 const deleteDiscount = async (discountId: string): Promise<void> => {
   try {
     await axiosInstance.delete(`/API/Discount/deleteByID/${discountId}`);
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Xóa mã giảm giá thất bại');
     return Promise.reject(error);
   }

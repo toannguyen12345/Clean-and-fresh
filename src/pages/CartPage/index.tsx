@@ -1,62 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { Button, Input } from '@/components';
-import {
-  listCart,
-  cleanCart,
-  cleanFullCart,
-  addCart,
-  removeCart,
-} from '@/apis/cart';
-import { getUserId } from '@/apis/user';
+import { cleanCart, cleanFullCart, addCart, removeCart } from '@/apis/cart';
 import { applyDiscount } from '@/utils/discount';
 import { createOrder } from '@/apis/order';
 import { cartItemHelpers } from '@/utils/cart';
-import type { CartItem } from '@/types/cart';
+import { useUser } from '@/contexts/UserContext';
+import { useCart } from '@/contexts/CartContext';
 
 import CartItemComponent from './components/CartItem';
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [_isLoading, setIsLoading] = useState(true);
+  const { userId } = useUser();
+  const { cartItems, refreshCart } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [discountError, setDiscountError] = useState('');
-
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        setIsLoading(true);
-
-        const userId = await getUserId();
-        if (!userId) {
-          setIsLoading(false);
-          return;
-        }
-
-        const cartResponse = await listCart(userId);
-
-        if (cartResponse.success && cartResponse.items) {
-          setCartItems(cartResponse.items as unknown as CartItem[]);
-        } else {
-          console.error(
-            '[CartPage] Failed to fetch cart:',
-            cartResponse.message,
-          );
-          toast.error(cartResponse.message || 'Lấy giỏ hàng thất bại');
-        }
-      } catch (error) {
-        console.error('Fetch cart error:', error);
-        toast.error('Có lỗi xảy ra khi lấy giỏ hàng');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCartItems();
-  }, []);
 
   const getTotalPrice = () => {
     return cartItems.reduce(
@@ -81,7 +42,6 @@ const CartPage = () => {
         return;
       }
 
-      const userId = await getUserId();
       if (!userId) return;
 
       await addCart({
@@ -92,17 +52,13 @@ const CartPage = () => {
         price: cartItemHelpers.getPrice(item),
       });
 
-      setCartItems((prev) =>
-        prev.map((i) =>
-          i._id === itemId ? { ...i, quantity: i.quantity + 1 } : i,
-        ),
-      );
+      await refreshCart();
 
       // Reset discount khi thay đổi giỏ hàng
       setDiscount(0);
       setPromoCode('');
-    } catch (error) {
-      // Silent fail
+    } catch (error: unknown) {
+      console.error('[CartPage] Error increasing quantity:', error);
     }
   };
 
@@ -111,7 +67,6 @@ const CartPage = () => {
       const item = cartItems.find((i) => i._id === itemId);
       if (!item || item.quantity <= 1) return;
 
-      const userId = await getUserId();
       if (!userId) return;
 
       await removeCart({
@@ -122,17 +77,13 @@ const CartPage = () => {
         price: cartItemHelpers.getPrice(item),
       });
 
-      setCartItems((prev) =>
-        prev.map((i) =>
-          i._id === itemId ? { ...i, quantity: i.quantity - 1 } : i,
-        ),
-      );
+      await refreshCart();
 
       // Reset discount khi thay đổi giỏ hàng
       setDiscount(0);
       setPromoCode('');
-    } catch (error) {
-      // Silent fail
+    } catch (error: unknown) {
+      console.error('[CartPage] Error decreasing quantity:', error);
     }
   };
 
@@ -141,9 +92,7 @@ const CartPage = () => {
       const item = cartItems.find((i) => i._id === itemId);
       if (!item) return;
 
-      setCartItems((prev) => prev.filter((i) => i._id !== itemId));
-
-      const userId = await getUserId();
+      await refreshCart();
       if (!userId) return;
 
       await cleanCart({
@@ -155,8 +104,8 @@ const CartPage = () => {
       // Reset discount khi thay đổi giỏ hàng
       setDiscount(0);
       setPromoCode('');
-    } catch (error) {
-      // Silent fail
+    } catch (error: unknown) {
+      console.error('[CartPage] Error removing item:', error);
     }
   };
 
@@ -176,7 +125,7 @@ const CartPage = () => {
         setDiscountError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
         setDiscount(0);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('[CartPage] Error applying discount:', error);
       setDiscountError('Có lỗi xảy ra khi áp dụng mã giảm giá');
       setDiscount(0);
@@ -187,16 +136,7 @@ const CartPage = () => {
 
   const handleCheckout = async (method: 'online' | 'cash') => {
     try {
-      if (cartItems.length === 0) {
-        toast.error('Giỏ hàng trống');
-        return;
-      }
-
-      const userId = await getUserId();
-      if (!userId) {
-        toast.error('Vui lòng đăng nhập');
-        return;
-      }
+      if (!userId) return;
 
       const totalPrice = getTotalPrice();
       const finalTotal = totalPrice - discount;
@@ -233,13 +173,14 @@ const CartPage = () => {
         toast.success('Tạo đơn hàng thành công');
 
         await cleanFullCart(userId);
-        setCartItems([]);
+        await refreshCart();
         setDiscount(0);
         setPromoCode('');
       } else {
         toast.error(response.message || 'Tạo đơn hàng thất bại');
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('[CartPage] Error during checkout:', error);
       toast.error('Có lỗi xảy ra');
     }
   };
@@ -318,6 +259,7 @@ const CartPage = () => {
                   onClick={() => handleCheckout('online')}
                   color="success"
                   className="w-full bg-[#28a745] hover:bg-[#218838]"
+                  disabled={cartItems.length === 0 || !userId}
                 >
                   Thanh toán online
                 </Button>
@@ -325,6 +267,7 @@ const CartPage = () => {
                   onClick={() => handleCheckout('cash')}
                   color="secondary"
                   className="w-full"
+                  disabled={cartItems.length === 0 || !userId}
                 >
                   Thanh toán tiền mặt
                 </Button>

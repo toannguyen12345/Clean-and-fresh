@@ -29,7 +29,13 @@ export const userProfileSchema = z.object({
       },
       { message: 'Bạn phải trên 16 tuổi' },
     ),
-  userAddress: z.string().min(1, 'Vui lòng nhập địa chỉ'),
+  userAddress: z
+    .string()
+    .min(1, 'Vui lòng nhập địa chỉ')
+    .regex(
+      /^[\p{L}\p{N}\s,.-]+$/u,
+      'Địa chỉ chỉ được chứa chữ, số, khoảng trắng, dấu phẩy, dấu chấm và dấu gạch ngang',
+    ),
 });
 
 export type UserProfileFormData = z.infer<typeof userProfileSchema>;

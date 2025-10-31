@@ -1,17 +1,33 @@
-import axiosInstance from '@/lib/axios';
 import { addCart } from '@/apis/cart';
-import { hasAuthToken } from '@/utils/auth';
-import { getUserId } from '@/apis/user';
 import type { CartItem } from '@/types/cart';
 
 export { hasAuthToken, isLoggedIn } from '@/utils/auth';
 
 export const cartItemHelpers = {
-  getPrice: (item: CartItem) => item.product?.ProductPrice || 0,
-  getName: (item: CartItem) => item.product?.productName || 'Sản phẩm',
-  getId: (item: CartItem) => item.product?._id || '',
-  getMaxQuantity: (item: CartItem) => item.product?.ProductQuantity || 100,
-  getImage: (item: CartItem) => item.product?.image || item.product?.IMG || '',
+  getPrice: (item: CartItem) => {
+    const product = item.product;
+    return typeof product === 'string' ? 0 : product?.ProductPrice || 0;
+  },
+  getName: (item: CartItem) => {
+    const product = item.product;
+    return typeof product === 'string'
+      ? 'Sản phẩm'
+      : product?.productName || 'Sản phẩm';
+  },
+  getId: (item: CartItem) => {
+    const product = item.product;
+    return typeof product === 'string' ? product : product?._id || '';
+  },
+  getMaxQuantity: (item: CartItem) => {
+    const product = item.product;
+    return typeof product === 'string' ? 100 : product?.ProductQuantity || 100;
+  },
+  getImage: (item: CartItem) => {
+    const product = item.product;
+    return typeof product === 'string'
+      ? ''
+      : product?.image || product?.IMG || '';
+  },
 };
 
 export const calculateCartTotal = (items: CartItem[]): number => {
@@ -59,38 +75,9 @@ export const buildCartItemData = (
   };
 };
 
-export const fetchCartItems = async (userId: string) => {
-  try {
-    const cartResponse = await axiosInstance.get(`/API/cart/list/${userId}`);
-    return Array.isArray(cartResponse) ? cartResponse : cartResponse.data || [];
-  } catch (error) {
-    console.error('[cartUtils] Error fetching cart items:', error);
-    return [];
-  }
-};
-export const getProductQuantityInCart = async (
-  productId: string,
-): Promise<number> => {
-  if (!hasAuthToken()) return 0;
-
-  try {
-    const userId = await getUserId();
-    if (!userId) return 0;
-
-    const cartItems = await fetchCartItems(userId);
-    interface CartItemType {
-      product?: { _id: string };
-      quantity: number;
-    }
-    const cartItem = (cartItems as CartItemType[]).find(
-      (item) => item.product?._id === productId,
-    );
-    return cartItem ? cartItem.quantity : 0;
-  } catch (error) {
-    console.error('[cartUtils] Error getting product quantity:', error);
-    return 0;
-  }
-};
+// Deprecated: Use useCart().getProductQuantity() from CartContext instead
+// This function is kept for backward compatibility but should not be used
+// as it makes unnecessary API calls. CartContext already manages cart state globally.
 export const addProductToCart = async (
   productId: string,
   userId: string,

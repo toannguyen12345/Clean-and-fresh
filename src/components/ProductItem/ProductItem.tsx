@@ -2,18 +2,10 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 import { RatingStars, AddToCartButton } from '@/components';
-import { addCart } from '@/apis/cart';
-import axiosInstance from '@/lib/axios';
-import { getProductQuantityInCart } from '@/utils/cart';
+import { addCart, removeCart } from '@/apis/cart';
 import { isLoggedIn } from '@/utils/auth';
-
-interface UserResponse {
-  user?: {
-    _id: string;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
+import { useUser } from '@/contexts/UserContext';
+import { useCart } from '@/contexts/CartContext';
 
 interface ProductData {
   id: string;
@@ -32,23 +24,56 @@ const ProductItem = ({
   data,
   onProductClick,
 }: ProductItemProps): JSX.Element => {
+  const { userId } = useUser();
+  const { getProductQuantity, refreshCart } = useCart();
   const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
-    const loadQuantity = async () => {
-      const qty = await getProductQuantityInCart(data.id);
-      setQuantity(qty);
-    };
+    const qty = getProductQuantity(data.id);
+    setQuantity(qty);
+  }, [data.id, getProductQuantity]);
 
-    loadQuantity();
-  }, [data.id]);
+  const handleIncrement = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
 
-  const updateQuantity = (newQuantity: number) => {
-    setQuantity(newQuantity);
-    const savedQuantities = localStorage.getItem('cartQuantities');
-    const quantities = savedQuantities ? JSON.parse(savedQuantities) : {};
-    quantities[data.id] = newQuantity;
-    localStorage.setItem('cartQuantities', JSON.stringify(quantities));
+    try {
+      if (!userId) return;
+
+      await addCart({
+        product: data.id,
+        user: userId,
+        quantity: 1,
+        productName: data.name,
+        price: data.price,
+      });
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[ProductItem] Error adding to cart:', error);
+    }
+  };
+
+  const handleDecrement = async () => {
+    if (quantity <= 0) return;
+
+    try {
+      if (!userId) return;
+
+      await removeCart({
+        product: data.id,
+        user: userId,
+        quantity: 1,
+        productName: data.name,
+        price: data.price,
+      });
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[ProductItem] Error removing from cart:', error);
+    }
   };
 
   return (
@@ -79,59 +104,8 @@ const ProductItem = ({
             onClick={(e) => e.stopPropagation()}
           >
             <AddToCartButton
-              onIncrement={async () => {
-                if (!isLoggedIn()) {
-                  toast.error(
-                    'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
-                  );
-                  return;
-                }
-
-                const newQuantity = quantity + 1;
-                updateQuantity(newQuantity);
-
-                try {
-                  const response = (await axiosInstance.get(
-                    '/API/user/me',
-                  )) as UserResponse;
-                  const userId = response.user?._id;
-                  if (!userId) return;
-
-                  await addCart({
-                    product: data.id,
-                    user: userId,
-                    quantity: 1,
-                    productName: data.name,
-                    price: data.price,
-                  });
-                } catch (error) {
-                  updateQuantity(quantity);
-                }
-              }}
-              onDecrement={async () => {
-                if (quantity <= 0) return;
-
-                const newQuantity = Math.max(0, quantity - 1);
-                updateQuantity(newQuantity);
-
-                try {
-                  const response = (await axiosInstance.get(
-                    '/API/user/me',
-                  )) as UserResponse;
-                  const userId = response.user?._id;
-                  if (!userId) return;
-
-                  await axiosInstance.post(`/API/cart/remove`, {
-                    product: data.id,
-                    user: userId,
-                    quantity: 1,
-                    productName: data.name,
-                    price: data.price,
-                  });
-                } catch (error) {
-                  updateQuantity(quantity);
-                }
-              }}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
               quantity={quantity}
               color="black"
             />

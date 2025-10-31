@@ -5,16 +5,19 @@ import toast from 'react-hot-toast';
 import { Button, RatingStars } from '@/components';
 import { QuantitySelector } from '@/components/QuantitySelector';
 import { getProductById } from '@/apis/product';
-import axiosInstance from '@/lib/axios';
-import { getProductQuantityInCart, addProductToCart } from '@/utils/cart';
-import { getUserId } from '@/apis/user';
+import { removeCart } from '@/apis/cart';
+import { addProductToCart } from '@/utils/cart';
 import { isLoggedIn } from '@/utils/auth';
+import { useUser } from '@/contexts/UserContext';
+import { useCart } from '@/contexts/CartContext';
 import { USER_ROUTES } from '@/constants/routes';
 import type { Product } from '@/types/product';
 
 const DetailFood = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { userId } = useUser();
+  const { getProductQuantity, refreshCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(0);
@@ -23,27 +26,14 @@ const DetailFood = (): JSX.Element => {
     const fetchProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await getProductById(id!);
+        const product = await getProductById(id!);
+        setProduct(product);
 
-        if (response) {
-          const product =
-            response && typeof response === 'object' && 'success' in response
-              ? (response as Record<string, unknown>).data
-              : response;
-          if (product && typeof product === 'object' && '_id' in product) {
-            setProduct(product as Product);
-          }
-        }
-
-        // Fetch quantity từ BE cart
-        try {
-          const qty = await getProductQuantityInCart(id!);
-          setQuantity(qty);
-        } catch (cartError) {
-          setQuantity(0);
-        }
-      } catch (error) {
-        // Silent fail
+        const qty = getProductQuantity(id!);
+        setQuantity(qty);
+      } catch (error: unknown) {
+        console.error('[DetailFood] Error fetching product:', error);
+        setQuantity(0);
       } finally {
         setIsLoading(false);
       }
@@ -52,17 +42,14 @@ const DetailFood = (): JSX.Element => {
     if (id) {
       fetchProduct();
     }
-  }, [id]);
+  }, [id, getProductQuantity]);
   const handleIncrease = async () => {
     if (!isLoggedIn()) {
       toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
       return;
     }
 
-    setQuantity((prev) => prev + 1);
-
     try {
-      const userId = await getUserId();
       if (!userId || !product) return;
 
       await addProductToCart(
@@ -72,29 +59,30 @@ const DetailFood = (): JSX.Element => {
         product.productName,
         product.ProductPrice,
       );
-    } catch (error) {
-      // Silent fail
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error increasing quantity:', error);
     }
   };
 
   const handleDecrease = async () => {
     if (quantity <= 1) return;
 
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-
     try {
-      const userId = await getUserId();
       if (!userId || !product) return;
 
-      await axiosInstance.post(`/API/cart/remove`, {
+      await removeCart({
         product: id!,
         user: userId,
         quantity: 1,
         productName: product.productName,
         price: product.ProductPrice,
       });
-    } catch (error) {
-      // Silent fail
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error decreasing quantity:', error);
     }
   };
 
@@ -109,7 +97,6 @@ const DetailFood = (): JSX.Element => {
         return;
       }
 
-      const userId = await getUserId();
       if (!userId) return;
 
       await addProductToCart(
@@ -119,9 +106,12 @@ const DetailFood = (): JSX.Element => {
         product.productName,
         product.ProductPrice,
       );
+
+      await refreshCart();
       toast.success('Thêm vào giỏ hàng thành công');
       setQuantity(0);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error adding to cart:', error);
       toast.error('Thêm vào giỏ hàng thất bại');
     }
   };
@@ -137,7 +127,6 @@ const DetailFood = (): JSX.Element => {
         return;
       }
 
-      const userId = await getUserId();
       if (!userId) return;
 
       await addProductToCart(
@@ -147,8 +136,11 @@ const DetailFood = (): JSX.Element => {
         product.productName,
         product.ProductPrice,
       );
+
+      await refreshCart();
       navigate(USER_ROUTES.US0004_CART);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error buying now:', error);
       toast.error('Có lỗi xảy ra');
     }
   };

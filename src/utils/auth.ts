@@ -21,9 +21,7 @@ export const removeAuthToken = (): void => {
 
 export const hasAuthToken = (): boolean => {
   if (typeof window === 'undefined') return false;
-  const token =
-    localStorage.getItem('token') || localStorage.getItem('authToken');
-  return !!token;
+  return !!localStorage.getItem('authToken');
 };
 
 export const isLoggedIn = (): boolean => {

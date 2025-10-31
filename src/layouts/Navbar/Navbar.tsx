@@ -35,18 +35,10 @@ const Navbar = (): JSX.Element => {
 
   const handleMenuClick = () => {
     setMenu('menu');
-    setTimeout(() => {
-      const element = document.getElementById('food-display');
-      element?.scrollIntoView({ behavior: 'smooth' });
-    }, 0);
   };
 
   const handleContactClick = () => {
     setMenu('About');
-    setTimeout(() => {
-      const element = document.getElementById('footer');
-      element?.scrollIntoView({ behavior: 'smooth' });
-    }, 0);
   };
 
   return (
@@ -67,16 +59,17 @@ const Navbar = (): JSX.Element => {
             Trang chủ
           </Link>
 
-          <button
+          <a
+            href="#food-display"
             onClick={handleMenuClick}
-            className={`cursor-pointer hover:text-[#28a745] transition-colors bg-transparent border-none p-0 text-[1.21rem] ${
+            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
               menu === 'menu'
                 ? 'text-[#28a745] font-semibold'
                 : 'text-[#49557e]'
             }`}
           >
             Menu
-          </button>
+          </a>
 
           <Link
             to="/user/history"
@@ -88,16 +81,17 @@ const Navbar = (): JSX.Element => {
             Đơn mua
           </Link>
 
-          <button
+          <a
+            href="#footer"
             onClick={handleContactClick}
-            className={`cursor-pointer hover:text-[#28a745] transition-colors bg-transparent border-none p-0 text-[1.21rem] ${
+            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
               menu === 'About'
                 ? 'text-[#28a745] font-semibold'
                 : 'text-[#49557e]'
             }`}
           >
             Liên hệ
-          </button>
+          </a>
         </ul>
 
         <div className="flex items-center gap-[50px] cursor-pointer">

@@ -39,7 +39,7 @@ const listCart = async (userId: string): Promise<ListCartResponse> => {
       message: 'Lấy danh sách giỏ hàng thành công',
       items,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Lấy danh sách giỏ hàng thất bại');
     return {
       success: false,
@@ -56,7 +56,7 @@ const addCart = async (cartData: CartItem): Promise<CartResponse> => {
       message: 'Thêm sản phẩm vào giỏ hàng thành công',
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(
       error,
       'Thêm sản phẩm vào giỏ hàng thất bại',
@@ -79,7 +79,7 @@ const removeCart = async (cartData: CartItem): Promise<CartResponse> => {
       message: 'Giảm số lượng sản phẩm thành công',
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Giảm số lượng sản phẩm thất bại');
     return {
       success: false,
@@ -99,7 +99,7 @@ const cleanCart = async (cartData: CartItem): Promise<CartResponse> => {
       message: response.data.message || 'Xóa sản phẩm khỏi giỏ hàng thành công',
       data: undefined,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(
       error,
       'Xóa sản phẩm khỏi giỏ hàng thất bại',
@@ -121,7 +121,7 @@ const cleanFullCart = async (userId: string): Promise<CartResponse> => {
       message: response.data.message || 'Làm sạch giỏ hàng thành công',
       data: undefined,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Làm sạch giỏ hàng thất bại');
     return {
       success: false,

@@ -118,7 +118,7 @@ export const applyDiscount = async (
       finalPrice,
       discount,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[discountUtils] Error applying discount:', error);
     return { discountAmount: 0, finalPrice: totalPrice };
   }

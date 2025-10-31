@@ -23,7 +23,8 @@ const register = async (userData: UserData): Promise<AuthResponse> => {
       data: response.data,
       message: 'Đăng ký thành công',
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('[authApi] Error registering:', error);
     return Promise.reject(error);
   }
 };
@@ -60,7 +61,8 @@ const signin = async (credentials: Credentials): Promise<AuthResponse> => {
       success: false,
       message: 'Không nhận được token',
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('[authApi] Error signing in:', error);
     return Promise.reject(error);
   }
 };
@@ -94,7 +96,8 @@ const verifyToken = async (): Promise<AuthResponse> => {
       data: response.data,
       message: 'Token hợp lệ',
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('[authApi] Error verifying token:', error);
     return Promise.reject(error);
   }
 };

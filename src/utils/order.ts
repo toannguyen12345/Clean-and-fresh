@@ -187,7 +187,12 @@ export const calculateDashboardStats = (
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
 
-  orders.forEach((order) => {
+  // Chỉ tính các đơn hàng có status là "delivered" (đã giao)
+  const deliveredOrders = orders.filter(
+    (order) => order.deliverStatus === 'delivered',
+  );
+
+  deliveredOrders.forEach((order) => {
     const orderAmount = order.totalAmount || 0;
     totalRevenue += orderAmount;
 
@@ -211,7 +216,7 @@ export const calculateDashboardStats = (
 
   return {
     totalRevenue,
-    totalOrders: orders.length,
+    totalOrders: deliveredOrders.length,
     weeklySales,
     yearlySales,
   };

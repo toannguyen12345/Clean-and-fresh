@@ -17,7 +17,7 @@ const getAllOrders = async (): Promise<ListOrdersResponse> => {
       message: 'Lấy danh sách tất cả đơn hàng thành công',
       orders: Array.isArray(response) ? response : [],
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Lấy danh sách đơn hàng thất bại');
     return {
       success: false,
@@ -43,7 +43,7 @@ const getOrdersByUserId = async (
       message: 'Lấy danh sách đơn hàng của người dùng thành công',
       orders,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Lấy danh sách đơn hàng thất bại');
     return {
       success: false,
@@ -63,7 +63,7 @@ const createOrder = async (orderData: OrderInfo): Promise<OrderResponse> => {
       message: 'Tạo đơn hàng thành công',
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(error, 'Tạo đơn hàng thất bại');
     return {
       success: false,
@@ -88,7 +88,7 @@ const updateDeliverStatus = async (
       message: 'Cập nhật trạng thái đơn hàng thành công',
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     const errorData = handleApiError(
       error,
       'Cập nhật trạng thái đơn hàng thất bại',
