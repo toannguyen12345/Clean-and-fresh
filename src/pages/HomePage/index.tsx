@@ -19,14 +19,13 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setIsLoading(true);
         const result = await listProducts();
         if (result.success && result.data) {
           setProducts(result.data);
           setFilteredProducts(result.data);
         }
-      } catch (error) {
-        console.error('Fetch products error:', error);
+      } catch (error: unknown) {
+        console.error('[HomePage] Fetch products error:', error);
       } finally {
         setIsLoading(false);
       }

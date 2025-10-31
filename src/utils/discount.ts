@@ -1,6 +1,7 @@
 import type { DiscountType } from '@/types/discount';
 import type { Discount } from '@/types/discount';
 import type { DiscountFormData } from '@/schemas/discount';
+import { searchDiscountByCode } from '@/apis/discount';
 
 export interface DiscountArrayResponse {
   discounts: Discount[];
@@ -61,4 +62,43 @@ export const createDiscountPayload = (
     startDate: data.startDate,
     expiryDate: data.expiryDate,
   };
+};
+
+export const applyDiscount = async (
+  code: string,
+  totalPrice: number,
+): Promise<{
+  discountAmount: number;
+  finalPrice: number;
+  discount?: Discount;
+}> => {
+  try {
+    const discounts = await searchDiscountByCode(code);
+
+    if (!discounts || discounts.length === 0) {
+      return { discountAmount: 0, finalPrice: totalPrice };
+    }
+
+    const discount = discounts[0];
+    const baseDiscountAmount =
+      discount.discountType === 'percent'
+        ? (totalPrice * discount.discountValue) / 100
+        : discount.discountValue;
+
+    const discountAmount = Math.max(
+      0,
+      Math.min(baseDiscountAmount, totalPrice),
+    );
+
+    const finalPrice = Math.max(0, totalPrice - discountAmount);
+
+    return {
+      discountAmount,
+      finalPrice,
+      discount,
+    };
+  } catch (error: unknown) {
+    console.error('[discountUtils] Error applying discount:', error);
+    return { discountAmount: 0, finalPrice: totalPrice };
+  }
 };

@@ -85,9 +85,9 @@ const InputForm = ({
                 />
               )}
             />
-            {getErrorMessage('discountType') && (
+            {errors.discountType?.message && (
               <p className="text-red-500 text-sm mt-1">
-                {getErrorMessage('discountType')}
+                {errors.discountType?.message}
               </p>
             )}
           </FormField>

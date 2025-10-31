@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 import { RatingStars, AddToCartButton } from '@/components';
+import { addCart, removeCart } from '@/apis/cart';
+import { isLoggedIn } from '@/utils/auth';
+import { useUser } from '@/contexts/UserContext';
+import { useCart } from '@/contexts/CartContext';
 
 interface ProductData {
   id: string;
@@ -19,7 +24,57 @@ const ProductItem = ({
   data,
   onProductClick,
 }: ProductItemProps): JSX.Element => {
+  const { userId } = useUser();
+  const { getProductQuantity, refreshCart } = useCart();
   const [quantity, setQuantity] = useState(0);
+
+  useEffect(() => {
+    const qty = getProductQuantity(data.id);
+    setQuantity(qty);
+  }, [data.id, getProductQuantity]);
+
+  const handleIncrement = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
+
+    try {
+      if (!userId) return;
+
+      await addCart({
+        product: data.id,
+        user: userId,
+        quantity: 1,
+        productName: data.name,
+        price: data.price,
+      });
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[ProductItem] Error adding to cart:', error);
+    }
+  };
+
+  const handleDecrement = async () => {
+    if (quantity <= 0) return;
+
+    try {
+      if (!userId) return;
+
+      await removeCart({
+        product: data.id,
+        user: userId,
+        quantity: 1,
+        productName: data.name,
+        price: data.price,
+      });
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[ProductItem] Error removing from cart:', error);
+    }
+  };
 
   return (
     <div
@@ -49,8 +104,8 @@ const ProductItem = ({
             onClick={(e) => e.stopPropagation()}
           >
             <AddToCartButton
-              onIncrement={() => setQuantity(quantity + 1)}
-              onDecrement={() => setQuantity(Math.max(0, quantity - 1))}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
               quantity={quantity}
               color="black"
             />

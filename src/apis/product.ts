@@ -28,7 +28,8 @@ const listProducts = async (): Promise<ProductListResponse> => {
       message: 'Lấy danh sách sản phẩm thành công',
       data: [],
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('[productApi] Error listing products:', error);
     return Promise.reject(error);
   }
 };
@@ -39,7 +40,7 @@ const getProductById = async (productId: string): Promise<Product | null> => {
       `/API/product/findByID/${productId}`,
     );
     return isProductResponse(response) ? response.product : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Lấy sản phẩm thất bại');
     return Promise.reject(error);
   }
@@ -51,7 +52,7 @@ const searchProductByName = async (name: string): Promise<Product[]> => {
       `/API/product/findByName/${encodeURIComponent(name)}`,
     );
     return isProductArray(response) ? response.products : [];
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Tìm sản phẩm thất bại');
     return Promise.reject(error);
   }
@@ -71,7 +72,7 @@ const createProduct = async (
       },
     );
     return isProductResponse(response) ? response.product : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Tạo sản phẩm thất bại');
     return Promise.reject(error);
   }
@@ -92,7 +93,7 @@ const updateProduct = async (
       },
     );
     return isProductResponse(response) ? response.product : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Cập nhật sản phẩm thất bại');
     return Promise.reject(error);
   }
@@ -101,7 +102,7 @@ const updateProduct = async (
 const deleteProduct = async (productId: string): Promise<void> => {
   try {
     await axiosInstance.delete(`/API/product/deleteByID/${productId}`);
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Xóa sản phẩm thất bại');
     return Promise.reject(error);
   }
@@ -117,7 +118,7 @@ const updateProductQuantity = async (
       { quantity },
     );
     return isProductResponse(response) ? response.product : null;
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Cập nhật số lượng sản phẩm thất bại');
     return Promise.reject(error);
   }

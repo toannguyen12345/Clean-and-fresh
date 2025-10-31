@@ -23,8 +23,8 @@ const listDiscounts = async (): Promise<DiscountListResponse> => {
       message: 'Lấy danh sách mã giảm giá thành công',
       data: discounts,
     };
-  } catch (error) {
-    console.error('listDiscounts error:', error);
+  } catch (error: unknown) {
+    console.error('[discountApi] Error listing discounts:', error);
     return Promise.reject(error);
   }
 };
@@ -35,9 +35,9 @@ const getDiscountById = async (
   try {
     const response = (await axiosInstance.get(
       `/API/discount/findByID/${discountId}`,
-    )) as { discount?: Discount };
-    return response.discount ?? null;
-  } catch (error) {
+    );
+    return isDiscountResponse(response) ? response.discount : null;
+  } catch (error: unknown) {
     handleApiError(error, 'Lấy mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -48,8 +48,8 @@ const searchDiscountByName = async (name: string): Promise<Discount[]> => {
     const response = await axiosInstance.get(
       `/API/discount/findByName/${encodeURIComponent(name)}`,
     );
-    return isDiscountArrayResponse(response) ? response.discounts : [];
-  } catch (error) {
+    return isDiscountArrayResponse(response) ? response.foundDiscounts : [];
+  } catch (error: unknown) {
     handleApiError(error, 'Tìm mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -60,8 +60,8 @@ const searchDiscountByCode = async (code: string): Promise<Discount[]> => {
     const response = await axiosInstance.get(
       `/API/discount/findByCode/${encodeURIComponent(code)}`,
     );
-    return isDiscountArrayResponse(response) ? response.discounts : [];
-  } catch (error) {
+    return isDiscountArrayResponse(response) ? response.foundDiscounts : [];
+  } catch (error: unknown) {
     handleApiError(error, 'Tìm mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -74,9 +74,9 @@ const createDiscount = async (
     const response = (await axiosInstance.post(
       `/API/discount/create`,
       discountData,
-    )) as { discount?: Discount };
-    return response.discount ?? null;
-  } catch (error) {
+    );
+    return isDiscountResponse(response) ? response.discount : null;
+  } catch (error: unknown) {
     handleApiError(error, 'Tạo mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -90,9 +90,9 @@ const updateDiscount = async (
     const response = (await axiosInstance.put(
       `/API/discount/updateByID/${discountId}`,
       discountData,
-    )) as { discount?: Discount };
-    return response.discount ?? null;
-  } catch (error) {
+    );
+    return isDiscountResponse(response) ? response.discount : null;
+  } catch (error: unknown) {
     handleApiError(error, 'Cập nhật mã giảm giá thất bại');
     return Promise.reject(error);
   }
@@ -100,7 +100,7 @@ const updateDiscount = async (
 const deleteDiscount = async (discountId: string): Promise<void> => {
   try {
     await axiosInstance.delete(`/API/Discount/deleteByID/${discountId}`);
-  } catch (error) {
+  } catch (error: unknown) {
     handleApiError(error, 'Xóa mã giảm giá thất bại');
     return Promise.reject(error);
   }

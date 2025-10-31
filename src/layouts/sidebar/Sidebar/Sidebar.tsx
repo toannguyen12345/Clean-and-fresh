@@ -9,6 +9,10 @@ interface NavItem {
   label: string;
 }
 
+interface SidebarProps {
+  onToggle?: (expanded: boolean) => void;
+}
+
 const NAV_ITEMS: NavItem[] = [
   { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
   { path: '/admin/users', icon: '👥', label: 'Người dùng' },
@@ -17,13 +21,15 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/admin/discounts', icon: '🎫', label: 'Mã giảm giá' },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onToggle }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const toggleSidebar = () => {
-    setIsExpanded(!isExpanded);
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    onToggle?.(newState);
   };
 
   const handleLogout = () => {
@@ -70,7 +76,12 @@ const Sidebar = () => {
           <li key={item.path}>
             <Link
               to={item.path}
-              onClick={() => !isExpanded && setIsExpanded(true)}
+              onClick={() => {
+                if (!isExpanded) {
+                  setIsExpanded(true);
+                  onToggle?.(true);
+                }
+              }}
               className={`flex items-center gap-4 px-4 py-3 transition-all duration-200 ${
                 isActiveRoute(item.path)
                   ? 'bg-[#28a745] text-white shadow-lg'

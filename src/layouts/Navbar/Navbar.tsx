@@ -33,6 +33,14 @@ const Navbar = (): JSX.Element => {
     navigate('/');
   };
 
+  const handleMenuClick = () => {
+    setMenu('menu');
+  };
+
+  const handleContactClick = () => {
+    setMenu('About');
+  };
+
   return (
     <>
       <div className="flex items-center justify-between px-[100px] py-5 bg-white pt-[5px]">
@@ -53,9 +61,11 @@ const Navbar = (): JSX.Element => {
 
           <a
             href="#food-display"
-            onClick={() => setMenu('menu')}
+            onClick={handleMenuClick}
             className={`cursor-pointer hover:text-[#28a745] transition-colors ${
-              menu === 'menu' ? 'text-[#28a745] font-semibold' : ''
+              menu === 'menu'
+                ? 'text-[#28a745] font-semibold'
+                : 'text-[#49557e]'
             }`}
           >
             Menu
@@ -71,21 +81,13 @@ const Navbar = (): JSX.Element => {
             Đơn mua
           </Link>
 
-          <Link
-            to={USER_ROUTES.US0005_PRODUCT_LIST}
-            onClick={() => setMenu('products')}
-            className={`cursor-pointer hover:text-[#28a745] transition-colors ${
-              menu === 'products' ? 'text-[#28a745] font-semibold' : ''
-            }`}
-          >
-            Quản lý sản phẩm
-          </Link>
-
           <a
-            href="#"
-            onClick={() => setMenu('About')}
+            href="#footer"
+            onClick={handleContactClick}
             className={`cursor-pointer hover:text-[#28a745] transition-colors ${
-              menu === 'About' ? 'text-[#28a745] font-semibold' : ''
+              menu === 'About'
+                ? 'text-[#28a745] font-semibold'
+                : 'text-[#49557e]'
             }`}
           >
             Liên hệ

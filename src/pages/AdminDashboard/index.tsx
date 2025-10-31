@@ -1,34 +1,62 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import { BsCurrencyDollar, BsPeople, BsCart3 } from 'react-icons/bs';
 
 import { formatCurrency, formatNumber } from '@/utils';
-
-interface DashboardStats {
-  totalRevenue: number;
-  totalUsers: number;
-  totalOrders: number;
-  weeklySales: number[];
-  yearlySales: number[];
-}
+import userService from '@/apis/user';
+import { getAllOrders } from '@/apis/order';
+import type { OrderInfo } from '@/types/order';
+import { filterUsersByRoleCode } from '@/utils/user';
+import { calculateDashboardStats, type DashboardStats } from '@/utils/order';
 
 interface AdminDashboardProps {
   stats?: DashboardStats;
 }
 
 const AdminDashboard = ({
-  stats = {
-    totalRevenue: 125000000,
-    totalUsers: 1250,
-    totalOrders: 3420,
-    weeklySales: [
-      15000000, 18000000, 22000000, 19000000, 25000000, 28000000, 20000000,
-    ],
-    yearlySales: [120000000, 135000000, 145000000, 160000000, 180000000],
+  stats: initialStats = {
+    totalRevenue: 0,
+    totalUsers: 0,
+    totalOrders: 0,
+    weeklySales: [0, 0, 0, 0, 0, 0, 0],
+    yearlySales: [0, 0, 0, 0, 0],
   },
 }: AdminDashboardProps) => {
+  const [stats, setStats] = useState<DashboardStats>(initialStats);
   const weeklyChartRef = useRef<Chart | null>(null);
   const yearlyChartRef = useRef<Chart | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const usersResponse = await userService.listUsers();
+        const filteredUsers = filterUsersByRoleCode(
+          1,
+          usersResponse.users || [],
+        );
+        const totalUsers = filteredUsers.length;
+
+        const ordersResponse = await getAllOrders();
+        const orders: OrderInfo[] = Array.isArray(ordersResponse.orders)
+          ? ordersResponse.orders
+          : [];
+
+        const orderStats = calculateDashboardStats(orders);
+
+        setStats({
+          totalRevenue: orderStats.totalRevenue,
+          totalUsers,
+          totalOrders: orderStats.totalOrders,
+          weeklySales: orderStats.weeklySales,
+          yearlySales: orderStats.yearlySales,
+        });
+      } catch (error: unknown) {
+        console.error('[AdminDashboard] Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   useEffect(() => {
     if (weeklyChartRef.current) {

@@ -6,7 +6,10 @@ export const discountSchema = z.object({
     .string()
     .min(1, 'Tên Giảm Giá là bắt buộc')
     .regex(/^[\p{L}\s]+$/u, 'Tên Giảm Giá không được chứa ký tự đặc biệt'),
-  discountCode: z.string().min(1, 'Mã Giảm Giá là bắt buộc'),
+  discountCode: z
+    .string()
+    .min(1, 'Mã Giảm Giá là bắt buộc')
+    .regex(/^[A-Z0-9]+$/, 'Mã Giảm Giá chỉ được chứa chữ hoa và số'),
   discountValue: z.number().min(1, 'Giá Trị Giảm là bắt buộc'),
   startDate: z.string().min(1, 'Ngày Bắt Đầu là bắt buộc'),
   expiryDate: z.string().min(1, 'Ngày Hết Hạn là bắt buộc'),

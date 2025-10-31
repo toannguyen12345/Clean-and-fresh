@@ -1,46 +1,152 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { Button, RatingStars } from '@/components';
 import { QuantitySelector } from '@/components/QuantitySelector';
 import { getProductById } from '@/apis/product';
+import { removeCart } from '@/apis/cart';
+import { addProductToCart } from '@/utils/cart';
+import { isLoggedIn } from '@/utils/auth';
+import { useUser } from '@/contexts/UserContext';
+import { useCart } from '@/contexts/CartContext';
+import { USER_ROUTES } from '@/constants/routes';
 import type { Product } from '@/types/product';
 
 const DetailFood = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
+  const navigate = useNavigate();
+  const { userId } = useUser();
+  const { getProductQuantity, refreshCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (id) {
-        try {
-          setIsLoading(true);
-          const result = await getProductById(id);
-          if (result) {
-            setProduct(result);
-          }
-        } catch (error) {
-          console.error('Fetch product error:', error);
-        } finally {
-          setIsLoading(false);
-        }
+      try {
+        setIsLoading(true);
+        const product = await getProductById(id!);
+        setProduct(product);
+
+        const qty = getProductQuantity(id!);
+        setQuantity(qty);
+      } catch (error: unknown) {
+        console.error('[DetailFood] Error fetching product:', error);
+        setQuantity(0);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchProduct();
-  }, [id]);
+    if (id) {
+      fetchProduct();
+    }
+  }, [id, getProductQuantity]);
+  const handleIncrease = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
 
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
-  const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+    try {
+      if (!userId || !product) return;
 
-  const handleAddToCart = () => {};
+      await addProductToCart(
+        id!,
+        userId,
+        1,
+        product.productName,
+        product.ProductPrice,
+      );
 
-  const handleBuyNow = () => {};
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error increasing quantity:', error);
+    }
+  };
+
+  const handleDecrease = async () => {
+    if (quantity <= 1) return;
+
+    try {
+      if (!userId || !product) return;
+
+      await removeCart({
+        product: id!,
+        user: userId,
+        quantity: 1,
+        productName: product.productName,
+        price: product.ProductPrice,
+      });
+
+      await refreshCart();
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error decreasing quantity:', error);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
+
+    try {
+      if (!product || !id || quantity === 0) {
+        return;
+      }
+
+      if (!userId) return;
+
+      await addProductToCart(
+        id,
+        userId,
+        quantity,
+        product.productName,
+        product.ProductPrice,
+      );
+
+      await refreshCart();
+      toast.success('Thêm vào giỏ hàng thành công');
+      setQuantity(0);
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error adding to cart:', error);
+      toast.error('Thêm vào giỏ hàng thất bại');
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!isLoggedIn()) {
+      toast.error('Vui lòng đăng nhập để mua sản phẩm');
+      return;
+    }
+
+    try {
+      if (!product || !id) {
+        return;
+      }
+
+      if (!userId) return;
+
+      await addProductToCart(
+        id,
+        userId,
+        1,
+        product.productName,
+        product.ProductPrice,
+      );
+
+      await refreshCart();
+      navigate(USER_ROUTES.US0004_CART);
+    } catch (error: unknown) {
+      console.error('[DetailFood] Error buying now:', error);
+      toast.error('Có lỗi xảy ra');
+    }
+  };
 
   const handleGoBack = () => {
-    window.history.back();
+    navigate(-1);
   };
 
   if (isLoading) {

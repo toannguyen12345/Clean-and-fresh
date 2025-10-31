@@ -61,3 +61,18 @@ export interface UserDataResponse {
     users?: UserInfo[];
   };
 }
+
+export interface UserResponse {
+  user?: UserInfo;
+}
+
+export interface UsersArrayResponse {
+  users: UserInfo[];
+}
+
+export interface UserDataResponse {
+  data: {
+    user?: UserInfo;
+    users?: UserInfo[];
+  };
+}

@@ -11,7 +11,10 @@ export const loginSchema = z.object({
 
 // Register Schema
 export const registerSchema = z.object({
-  userName: z.string().min(1, 'Tên không được để trống'),
+  userName: z
+    .string()
+    .min(1, 'Tên không được để trống')
+    .regex(/^[\p{L}\s]+$/u, 'Tên không được chứa ký tự đặc biệt'),
   userEmail: z.string().email('Email không hợp lệ'),
   account: z.string().min(1, 'Tên tài khoản không được để trống'),
   password: z.string().min(3, 'Mật khẩu phải có ít nhất 3 ký tự'),
@@ -22,6 +25,7 @@ export const editUserSchema = z.object({
   userName: z
     .string()
     .min(1, 'Tên người dùng không được để trống')
+    .regex(/^[\p{L}\s]+$/u, 'Tên người dùng không được chứa ký tự đặc biệt')
     .max(
       MAX_LENGTH.INPUT_DEFAULT,
       `Tên người dùng không được vượt quá ${MAX_LENGTH.INPUT_DEFAULT} ký tự`,
